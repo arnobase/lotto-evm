@@ -9,7 +9,7 @@ import { useContract } from '../contexts/ContractContext';
 
 export default function LottoPage() {
   const { doQuery, doTx, dryRun } = useContract();
-  const [selectedNumbers,setSelectedNumbers] = useState([])
+  const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [selectedTab, setSelectedTab] = useState<string>("participate"); // Initialize with a default value
 
   const tabs = []

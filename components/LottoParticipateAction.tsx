@@ -7,16 +7,19 @@ interface StyleType {
 }
 
 interface ContractType {
+  doQuery: (method: string, args: number[][]) => void;
   dryRun: (method: string, args: number[][]) => Promise<{ success: boolean }>;
   doTx: (method: string, args: number[][]) => void;
 }
 
+interface NumbersType {
+  sn: number[];
+  ssn: (numbers: number[]) => void;
+}
+
 interface Props {
-  numbers: {
-    sn: number[];
-    ssn: (numbers: number[]) => void;
-  };
   contract: ContractType;
+  numbers: NumbersType;
 }
 
 const style: StyleType = {
@@ -47,7 +50,7 @@ const LottoParticipateAction: React.FC<Props> = (props) => {
     };
 
     checkDryRun();
-  }, [props.numbers.sn, props.contract]);
+  }, [props.numbers.sn, props.contract, selected_numbers]);
 
   const processNumber = (e: number, ele: React.MouseEvent<HTMLDivElement>) => {
     let newNumbers = [...selected_numbers];
@@ -101,7 +104,7 @@ const LottoParticipateAction: React.FC<Props> = (props) => {
   };
 
   const doDryRun = async(): Promise<void> => {
-    let dryRunRes = await props.contract.dryRun("participate", [selected_numbers]);
+    const dryRunRes = await props.contract.dryRun("participate", [selected_numbers]);
     console.log("dryRunRes", dryRunRes);
   };
 

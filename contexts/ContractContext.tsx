@@ -32,7 +32,7 @@ interface DryRunResult {
 }
 
 interface ContractContextProps {
-  doQuery: (queryFunction: string, setResult?: (result: object | string | null) => void) => Promise<void>;
+  doQuery: (method: string, args: number[][]) => void;
   doTx: <T extends unknown[]>(tx: string, p: T, setResult?: (result: object | null) => void) => Promise<void>;
   dryRun: <T extends unknown[]>(tx: string, p: T) => Promise<DryRunResult>;
   contract: ethers.Contract | null;
@@ -65,11 +65,11 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     }
   }, [evmBrowserProvider, evmCustomProvider, evmAccount, evmNetwork]);
 
-  const doQuery = async (queryFunction: string, setResult?: (result: object | string | null) => void) => {
+  const doQuery = async (method: string, args: number[][]) => {
     if (queryContract) {
       try {
-        const result = await queryContract[queryFunction]();
-        if (setResult) setResult(result);
+        const result = await queryContract[method](...args);
+        return result;
       } catch (error) {
         console.error("Failed to interact with contract:", error);
       }
