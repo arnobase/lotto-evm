@@ -49,7 +49,13 @@ const Header: React.FC = () => {
   ]
 
   const handleNetworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    switchEvmNetwork(e.target.value);
+    const selectedNetwork = NETWORKS.find(network => network.name === e.target.value);
+    
+    if (selectedNetwork?.menuLink) {
+      window.location.href = selectedNetwork.menuLink;
+    } else {
+      switchEvmNetwork(e.target.value);
+    }
   };
 
   return (
@@ -112,7 +118,7 @@ const Header: React.FC = () => {
                   className="bg-gray-700 text-white px-3 py-1 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="" disabled>Select Network</option>
-                  {NETWORKS.map((network) => (
+                  {NETWORKS.filter(network => network.addToMenu).map((network) => (
                     <option key={network.name} value={network.name}>
                       {network.name}
                     </option>

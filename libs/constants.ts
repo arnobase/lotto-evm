@@ -34,6 +34,8 @@ interface SubstrateNetworkInfo {
 interface Network {
   name: string;
   type: NetworkType;
+  addToMenu : boolean;
+  menuLink? : string;
   info: EVMNetworkInfo | SubstrateNetworkInfo;
 }
 
@@ -42,6 +44,7 @@ export const NETWORKS: Network[] = [
   {
     name: 'Minato',
     type: 'EVM',
+    addToMenu : true,
     info: {
       chainId: '0x79a',
       chainName: 'Minato',
@@ -58,6 +61,7 @@ export const NETWORKS: Network[] = [
   {
     name: 'Moonbase',
     type: 'EVM',
+    addToMenu : true,
     info: {
       chainId: '0x507',  // 1287 en décimal
       chainName: 'Moonbase Alpha',
@@ -71,9 +75,11 @@ export const NETWORKS: Network[] = [
       blockExplorerUrls: ["https://moonbase.moonscan.io/"]
     },
   },
-  /*{
+  {
     name: 'Shibuya',
     type: 'EVM',
+    addToMenu : true,
+    menuLink : "https://lucky.substrate.fi/lotto/shibuya",
     info: {
       chainId: '0x51',  // 81 en décimal
       chainName: 'Shibuya Network',
@@ -86,7 +92,7 @@ export const NETWORKS: Network[] = [
       rpcUrls: ['https://evm.shibuya.astar.network'],
       blockExplorerUrls: ["https://shibuya.subscan.io/"]
     },
-  },*/
+  },
 ];
 
 // Interface pour les adresses de contrat
@@ -95,7 +101,7 @@ interface ContractAddresses {
 }
 
 export const CONTRACT_ADDRESSES: ContractAddresses = {
-  'Minato': '0x474F65998C79CD63843A33c46cd6B6B00dE455AB',
-  'Moonbase': '0x29621E6F2b7DBf256Ff0028dc04986C5E14Db50c',
-  'Shibuya': 'ZvzNqBdnQmg2nmDnPNF9dirosinGsX53hG1Exc5xqHzJHVX',
+  'Minato': '0xA8AE9c3F7bc784Ccd1E6013c59A233600C6dE90A',
+  'Moonbase': '0x991926D5ca21EF2938B5BAffbf4EC24fB55e205e',
+  'Shibuya': 'ZkMmwcAsCuFPB13kfXH6aQiJYAfnQYC2qMiK5h1mGKsMX86',
 };

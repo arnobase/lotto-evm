@@ -70,7 +70,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         console.error("Failed to list accounts:", accountError);
       }
     }
-    else {console.log("wallet non connecté")}
+    else {console.log("wallet not connected")}
   }, [evmBrowserProvider]);
 
   useEffect(() => {

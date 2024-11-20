@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import LottoParticipationList from './LottoParticipationList';
 import LottoParticipateAction from './LottoParticipateAction';
 import LottoResults from './LottoResults';
+import TransactionSearch from './TransactionSearch';
 //import LottoHeader from './LottoHeader';
 import LottoIntro from "./LottoIntro";
 //import LottoFooter from "./LottoFooter";
@@ -52,6 +53,7 @@ export default function LottoPage() {
       <div className={`flex items-center justify-center mt-14`}>
         <div className="md:w-[800px]  rounded-2xl px-2 py-8 mb-8">
           {/*<LottoFooter/>*/}
+          {/*<TransactionSearch/>*/}
         </div>
       </div>
     </div>
