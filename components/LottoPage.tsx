@@ -2,21 +2,25 @@ import { useEffect, useState, useRef } from 'react';
 import LottoParticipationList from './LottoParticipationList';
 import LottoParticipateAction from './LottoParticipateAction';
 import LottoResults from './LottoResults';
-import TransactionSearch from './TransactionSearch';
-//import LottoHeader from './LottoHeader';
 import LottoIntro from "./LottoIntro";
-//import LottoFooter from "./LottoFooter";
 import { useContract } from '../contexts/ContractContext';
+import LottoLastParticipation from './LottoLastParticipation';
+
+interface TransactionResult {
+  numbers?: number[];
+  timestamp?: number;
+  [key: string]: number[] | number | undefined;
+}
 
 export default function LottoPage() {
   const { doQuery, doTx, dryRun } = useContract();
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
-  const [selectedTab, setSelectedTab] = useState<string>("participate"); // Initialize with a default value
+  const [selectedTab, setSelectedTab] = useState<string>("participate");
+  const [lastTxResult, setLastTxResult] = useState<TransactionResult | null>(null);
 
   const tabs = []
-  tabs.push(useRef<HTMLDivElement>(null)) // Specify the type here
-  tabs.push(useRef<HTMLDivElement>(null)) // Specify the type here
-
+  tabs.push(useRef<HTMLDivElement>(null)) 
+  tabs.push(useRef<HTMLDivElement>(null))
 
   useEffect(() => {
     const tab_hash = window.location.hash !== "" ? window.location.hash.substring(1) : "participate";
@@ -30,7 +34,7 @@ export default function LottoPage() {
           <LottoIntro/>
         </div>
       </div>
-      <div className={`flex items-center justify-center mt-14`}>
+      <div className={`flex items-center justify-center mt-8`}>
         <div className="md:w-[600px] content-block bg-[#191B1F] rounded-2xl px-8 py-8">
           {/*<LottoHeader/>*/}
           <ul className="mb-8 text-sm font-medium text-center rounded-lg shadow flex divide-gray-700 text-gray-400">
@@ -41,8 +45,20 @@ export default function LottoPage() {
               <a href="#results" key="2" id="lotto-tab-results" onClick={()=>{setSelectedTab("results")}} className={(selectedTab==="results"?"bg-slate-600 ":"")+"inline-block w-full p-4 dark:border-gray-700 rounded-e-lg focus:outline-none bg-gray-700 text-white"}>Results</a>
             </li>
           </ul>
+          
           <div id="lotto-participate" ref={tabs[0]} className={selectedTab==="participate"?"":"hidden"}>
-            <LottoParticipateAction contract={{doQuery, doTx, dryRun}} numbers={{sn:selectedNumbers,ssn:setSelectedNumbers}} />
+            <LottoParticipateAction contract={{
+              doQuery,
+              doTx: async (...args) => {
+                const result = await doTx(...args);
+                console.log("TX Result",result)
+                if (result) setLastTxResult(result);
+              },
+              dryRun
+            }} numbers={{sn:selectedNumbers,ssn:setSelectedNumbers}} />
+            
+            {lastTxResult && <LottoLastParticipation result={lastTxResult} />}
+            
             <LottoParticipationList/>
           </div>
           <div id="lotto-results" ref={tabs[1]} className={selectedTab==="results"?"":"hidden"}>
@@ -54,6 +70,7 @@ export default function LottoPage() {
         <div className="md:w-[800px]  rounded-2xl px-2 py-8 mb-8">
           {/*<LottoFooter/>*/}
           {/*<TransactionSearch/>*/}
+          
         </div>
       </div>
     </div>

@@ -1,7 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
-//import { Web3Provider, ExternalProvider, JsonRpcProvider,  } from "@ethersproject/providers";
 import { ethers } from "ethers";
-//import { Eip1193Provider } from "ethers";
 import { NETWORKS } from "../libs/constants";
 import toast from 'react-hot-toast';
 import { getFromStorage, setToStorage } from "../libs/storage";

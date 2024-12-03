@@ -31,9 +31,16 @@ interface DryRunResult {
   message?: string;
 }
 
+interface TransactionResult {
+  ticketId: number;
+  drawId: number;
+  address: string;
+  numbers: number[];
+}
+
 interface ContractContextProps {
   doQuery: (method: string, args: number[][]) => void;
-  doTx: <T extends unknown[]>(tx: string, p: T, setResult?: (result: object | null) => void) => Promise<void>;
+  doTx: <T extends unknown[]>(tx: string, p: T, setResult?: (result: object | null) => void) => Promise<TransactionResult | null>;
   dryRun: <T extends unknown[]>(tx: string, p: T) => Promise<DryRunResult>;
   contract: ethers.Contract | null;
   queryContract: ethers.Contract | null;
@@ -80,7 +87,7 @@ export function ContractProvider({ children }: { children: ReactNode }) {
     tx: string,
     p: T,
     setResult?: (result: object | null) => void
-  ): Promise<void> {
+  ): Promise<TransactionResult | null> {
     if (contract && evmBrowserProvider) {
       const toastId = toast.loading("Preparing Tx...");
       try {
@@ -92,6 +99,17 @@ export function ContractProvider({ children }: { children: ReactNode }) {
         
         toast.loading("Processing Tx...", { id: toastId });
         const receipt = await txResponse.wait();
+
+        const rawResult = receipt.logs.length > 0 
+          ? contract.interface.parseLog(receipt.logs[receipt.logs.length - 1])?.args 
+          : null;
+
+        const formattedResult = rawResult ? {
+          ticketId: Number(Array.from(rawResult)[0]),
+          drawId: Number(Array.from(rawResult)[1]),
+          address: Array.from(rawResult)[2] as string,
+          numbers: Array.from(Array.from(rawResult)[3]).map(n => Number(n))
+        } : null;
 
         const network = NETWORKS.find(net => net.name === evmNetwork && net.type === 'EVM');
         if (network && network.type === 'EVM' && network.info.blockExplorerUrls) {
@@ -111,16 +129,18 @@ export function ContractProvider({ children }: { children: ReactNode }) {
         }
         
         if (setResult) setResult(receipt);
+        return formattedResult;
       } catch (error) {
         console.error("Failed to interact with contract:", error);
         toast.error("Erreur while processing Tx", { id: toastId });
+        throw error;
       }
     } else {
       toast.error("Wallet not connected");
+      throw new Error("Wallet not connected");
     }
-  };
-
-  
+    return null;
+  }
 
   const dryRun = async <T extends unknown[]>(tx: string, p: T): Promise<DryRunResult> => {
     if (contract && evmBrowserProvider) {

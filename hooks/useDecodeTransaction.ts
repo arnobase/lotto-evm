@@ -39,7 +39,7 @@ const useDecodeTransaction = (txHash: string) => {
         });
         return response.data;
       } catch (error: unknown) {
-        throw new Error(`Erreur lors de la requête API: ${(error as Error).message}`);
+        throw new Error(`API request error: ${(error as Error).message}`);
       }
     };
 
