@@ -3,6 +3,7 @@
 A modern and user-friendly lottery dApp UI built with Next.js, TypeScript, and Tailwind CSS.
 
 This UI interacts with:
+
 - Smart Contracts: [lotto-evm](https://github.com/GuiGou12358/lotto-evm)
 - Indexers: [lotto-multichain-subquery](https://github.com/GuiGou12358/lotto-multichain-subquery)
 
@@ -31,14 +32,18 @@ This UI interacts with:
 ## Dependencies
 
 ### Smart Contracts
+
 The UI interacts with smart contracts deployed from [lotto-evm](https://github.com/GuiGou12358/lotto-evm). These contracts handle:
+
 - Lottery participation logic
 - Number selection validation
 - Draw management
 - Multi-chain support
 
 ### Indexers
+
 Data querying is powered by [lotto-multichain-subquery](https://github.com/GuiGou12358/lotto-multichain-subquery) which provides:
+
 - Participation history
 - Draw results
 - Cross-chain data aggregation
@@ -49,7 +54,7 @@ Data querying is powered by [lotto-multichain-subquery](https://github.com/GuiGo
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/lotto-evm.git
+git clone https://github.com/arnobase/lotto-evm
 cd lotto-evm
 ```
 
@@ -79,7 +84,7 @@ NEXT_PUBLIC_SUBQUERY_URL=your_subquery_url
 
 ```
 ├── app/                  # Next.js app directory
-├── components/          
+├── components/        
 │   ├── common/          # Reusable components
 │   ├── lottery/         # Lottery-specific components
 │   └── web3/            # Web3 integration components
