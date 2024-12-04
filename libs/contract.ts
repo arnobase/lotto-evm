@@ -38,12 +38,13 @@ export class LotteryContract {
     }
 
     try {
-      if (typeof this.queryContract[method] !== 'function') {
+      const contractFunction = this.queryContract.getFunction(method);
+      if (!contractFunction) {
         console.error(`Method ${method} not found in contract`);
         return [];
       }
 
-      const result = await this.queryContract[method].apply(this.queryContract, args);
+      const result = await contractFunction.staticCall(...args);
       
       if (Array.isArray(result)) {
         return this.formatResults(result);
@@ -77,7 +78,8 @@ export class LotteryContract {
       const contractWithSigner = this.contract.connect(signer);
       console.log('Contract connected with signer');
 
-      if (typeof contractWithSigner[method] !== 'function') {
+      const contractFunction = contractWithSigner.getFunction(method);
+      if (!contractFunction) {
         console.error(`Method ${method} not found in contract`);
         throw new Error(`Method ${method} not found in contract`);
       }
@@ -85,7 +87,7 @@ export class LotteryContract {
       console.log('Preparing transaction call...');
       
       // Préparer la transaction sans l'envoyer
-      const txRequest = await contractWithSigner[method].populateTransaction(...args);
+      const txRequest = await contractFunction.populateTransaction(...args);
       console.log('Transaction request prepared:', txRequest);
 
       // Envoyer la transaction
@@ -130,11 +132,12 @@ export class LotteryContract {
       const signer = await this.browserProvider.getSigner();
       const contractWithSigner = this.contract.connect(signer);
 
-      if (typeof contractWithSigner[method] !== 'function') {
+      const contractFunction = contractWithSigner.getFunction(method);
+      if (!contractFunction) {
         throw new Error(`Method ${method} not found in contract`);
       }
 
-      await contractWithSigner[method].staticCall.apply(contractWithSigner, args);
+      await contractFunction.staticCall(...args);
       console.log('Dry run successful');
       return { success: true };
     } catch (error) {
@@ -143,7 +146,7 @@ export class LotteryContract {
     }
   }
 
-  private formatResults(rawResults: any[]): LotteryResult[] {
+  private formatResults(rawResults: unknown[]): LotteryResult[] {
     return rawResults.map(result => {
       if (!result || typeof result !== 'object') {
         console.error('Invalid result format:', result);
@@ -151,11 +154,17 @@ export class LotteryContract {
       }
 
       try {
+        const typedResult = result as { 
+          numbers: unknown[];
+          timestamp?: unknown;
+          transactionHash?: string;
+        };
+
         return {
-          numbers: Array.isArray(result.numbers) ? result.numbers.map(Number) : [],
-          timestamp: Number(result.timestamp || 0),
-          transactionHash: result.transactionHash || '',
-          hash: result.transactionHash || ''
+          numbers: Array.isArray(typedResult.numbers) ? typedResult.numbers.map(Number) : [],
+          timestamp: Number(typedResult.timestamp || 0),
+          transactionHash: typedResult.transactionHash || '',
+          hash: typedResult.transactionHash || ''
         };
       } catch (error) {
         console.error('Error formatting result:', error);

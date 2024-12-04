@@ -80,7 +80,11 @@ export const useLotteryParticipation = (
       setIsLoading(true);
       setErrorMessage("");
       try {
-        await contract.doTx("participate", [selectedNumbers]);
+        await contract.doTx({
+          method: "participate",
+          args: [selectedNumbers],
+          toastId: Date.now().toString()
+        });
         setSelectedNumbers([]);
       } catch (error) {
         setErrorMessage("Une erreur est survenue lors de la participation");

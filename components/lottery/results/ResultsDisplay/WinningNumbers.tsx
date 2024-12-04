@@ -20,7 +20,7 @@ const WinningNumbers: React.FC<WinningNumbersProps> = ({ numbers, timestamp }) =
             number={number}
             selected={true}
             onClick={() => {}}
-            size="lg"
+            size="md"
           />
         ))}
       </div>

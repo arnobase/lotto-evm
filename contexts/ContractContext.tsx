@@ -1,11 +1,11 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWeb3 } from './Web3Context';
 import { LotteryContract } from '../libs/contract';
-import { LotteryResult } from '../components/lottery/results/types';
+import { LotteryResult, TransactionParams } from '../components/lottery/results/types';
 
 interface ContractContextType {
   doQuery: (method: string, args: number[][]) => Promise<LotteryResult[]>;
-  doTx: (method: string, args: number[][]) => Promise<void>;
+  doTx: (params: TransactionParams) => Promise<{ hash: string }>;
   dryRun: (method: string, args: number[][]) => Promise<{ success: boolean }>;
 }
 
@@ -45,11 +45,11 @@ export function ContractProvider({ children }: ContractProviderProps) {
     return contract.doQuery(method, args);
   };
 
-  const doTx = async (method: string, args: number[][]): Promise<void> => {
+  const doTx = async (params: TransactionParams): Promise<{ hash: string }> => {
     if (!contract) {
       throw new Error('Contract not initialized');
     }
-    return contract.doTx(method, args);
+    return contract.doTx(params);
   };
 
   const dryRun = async (method: string, args: number[][]): Promise<{ success: boolean }> => {
