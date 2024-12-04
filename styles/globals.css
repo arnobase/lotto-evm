@@ -3,17 +3,28 @@
 @tailwind utilities;
 
 :root {
-  --background: #101010;
-  --foreground: #FFFFFF;
+  --background: #f9fafb;
+  --foreground: #111827;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background: #111827;
+  --foreground: #ffffff;
 }
 
+/* Ajout des transitions */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Exceptions pour les transitions */
+.transition-none {
+  transition: none;
+}
+
+/* Styles de base */
 body {
   color: var(--foreground);
   background: var(--background);

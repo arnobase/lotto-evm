@@ -30,11 +30,13 @@ const NumberBall: React.FC<NumberBallProps> = ({
       className={clsx(
         'rounded-full',
         'flex items-center justify-center',
-        'font-bold text-white',
+        'font-bold',
         'transition-all',
         'duration-200',
-        selected ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gray-700',
-        !selected && onClick && 'hover:bg-gray-600',
+        selected 
+          ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white' 
+          : 'bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white',
+        !selected && onClick && 'hover:bg-gray-400 dark:hover:bg-gray-600',
         onClick && 'cursor-pointer',
         !onClick && 'cursor-default',
         sizeClasses[size]

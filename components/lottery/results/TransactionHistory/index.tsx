@@ -48,13 +48,13 @@ const PaginationControls = ({
   <div className="flex justify-between items-center py-4">
     <button
       onClick={onDownload}
-      className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-gray-300 hover:text-white transition-colors duration-200"
+      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 border border-gray-300 dark:border-gray-600"
     >
       <ArrowDownTrayIcon className="h-5 w-5" />
       <span>Export</span>
     </button>
     <div className="flex items-center gap-4">
-      <span className="text-gray-400">
+      <span className="text-gray-600 dark:text-gray-400">
         Page {currentPage} of {totalPages}
       </span>
       <div className="flex gap-2">
@@ -63,8 +63,8 @@ const PaginationControls = ({
           disabled={currentPage === 1}
           className={`px-4 py-2 rounded-lg ${
             currentPage === 1
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
           }`}
         >
           Previous
@@ -74,8 +74,8 @@ const PaginationControls = ({
           disabled={currentPage === totalPages}
           className={`px-4 py-2 rounded-lg ${
             currentPage === totalPages
-              ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+              ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600'
           }`}
         >
           Next
@@ -130,7 +130,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
         <select
           value={selectedDraw}
           onChange={(e) => setSelectedDraw(e.target.value)}
-          className="col-span-2 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="col-span-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="">All draws</option>
           {drawNumbers.map(draw => (
@@ -141,7 +141,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
         <select
           value={selectedChain}
           onChange={(e) => setSelectedChain(e.target.value)}
-          className="col-span-3 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="col-span-3 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="">All chains</option>
           {chains.map(chain => (
@@ -154,7 +154,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
           placeholder="Search by address..."
           value={accountSearch}
           onChange={(e) => setAccountSearch(e.target.value)}
-          className="col-span-7 px-4 py-2 bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
         />
       </div>
 
@@ -169,12 +169,12 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
 
       <div className="space-y-2 my-4">
         {paginatedTransactions.map((tx) => (
-          <div key={tx.hash} className="bg-gray-800 rounded-lg p-3">
+          <div key={tx.hash} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-2 text-sm">
-                <span className="text-lg font-bold text-emerald-400">#{tx.drawNumber}</span>
-                <span className="px-3 py-1 bg-gray-700 rounded-full text-sm font-medium text-gray-300">{tx.chain}</span>
-                <span className="text-gray-400">{formatAddress(tx.accountId)}</span>
+                <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">#{tx.drawNumber}</span>
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300">{tx.chain}</span>
+                <span className="text-gray-600 dark:text-gray-400">{formatAddress(tx.accountId)}</span>
               </div>
               <div className="flex gap-2 flex-wrap justify-end mt-4 sm:mt-0">
                 {tx.numbers.map((number, index) => (
@@ -192,7 +192,7 @@ const TransactionHistory: React.FC<TransactionHistoryProps> = ({ transactions })
         ))}
 
         {filteredTransactions.length === 0 && (
-          <div className="text-center py-4 text-gray-400">
+          <div className="text-center py-4 text-gray-600 dark:text-gray-400">
             No participations found
           </div>
         )}

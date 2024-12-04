@@ -14,8 +14,8 @@ const SubmitButton: React.FC<SubmitButtonProps> = ({
         rounded-lg font-semibold
         transition-all duration-200
         ${canParticipate && !isLoading
-          ? 'bg-gradient-to-r from-green-500 via-cyan-400 to-green-500 hover:from-green-600 hover:via-cyan-500 hover:to-green-600 text-white relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-green-500 before:via-cyan-400 before:to-green-500 before:animate-gradient-x before:bg-[length:200%_100%]'
-          : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+          ? 'bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-500 hover:from-purple-600 hover:via-fuchsia-600 hover:to-purple-600 text-white relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-purple-500 before:via-fuchsia-500 before:to-purple-500 before:animate-gradient-x before:bg-[length:200%_100%]'
+          : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 border border-gray-400 dark:border-gray-500 cursor-not-allowed'
         }
       `}
     >

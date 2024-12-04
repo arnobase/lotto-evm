@@ -44,10 +44,10 @@ const LotteryPage = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl font-bold mb-4">
             Welcome to Lotto
           </h2>
-          <p className="text-xl text-gray-400">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Please connect your wallet to participate
           </p>
         </div>
@@ -58,17 +58,17 @@ const LotteryPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="bg-gray-900 rounded-xl p-6 shadow-xl">
+        <div className="bg-gray-200 dark:bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-300 dark:border-gray-700">
           <Tab.Group selectedIndex={selectedTab} onChange={handleTabChange}>
-            <Tab.List className="flex space-x-1 rounded-xl bg-gray-800 p-1">
+            <Tab.List className="flex space-x-1 rounded-xl bg-white dark:bg-gray-700 p-1 shadow-sm">
               <Tab
                 className={({ selected }) =>
                   classNames(
                     'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
                     'ring-white ring-opacity-60 ring-offset-2 ring-offset-emerald-400 focus:outline-none focus:ring-2',
                     selected
-                      ? 'bg-emerald-600 text-white shadow'
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-emerald-400 dark:bg-emerald-600 text-white shadow'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
                   )
                 }
               >
@@ -80,8 +80,8 @@ const LotteryPage = () => {
                     'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
                     'ring-white ring-opacity-60 ring-offset-2 ring-offset-emerald-400 focus:outline-none focus:ring-2',
                     selected
-                      ? 'bg-emerald-600 text-white shadow'
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-emerald-400 dark:bg-emerald-600 text-white shadow'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
                   )
                 }
               >
@@ -93,8 +93,8 @@ const LotteryPage = () => {
                     'w-full rounded-lg py-2.5 text-sm font-medium leading-5',
                     'ring-white ring-opacity-60 ring-offset-2 ring-offset-emerald-400 focus:outline-none focus:ring-2',
                     selected
-                      ? 'bg-emerald-600 text-white shadow'
-                      : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-emerald-400 dark:bg-emerald-600 text-white shadow'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white'
                   )
                 }
               >
@@ -112,7 +112,7 @@ const LotteryPage = () => {
                     }}
                   />
                   {participationsError && (
-                    <div className="text-red-500 text-center mt-4 p-4 bg-red-500/10 rounded-lg">
+                    <div className="text-red-500 text-center mt-4 p-4 bg-red-50 dark:bg-red-500/10 rounded-lg">
                       {participationsError}
                     </div>
                   )}
@@ -124,7 +124,7 @@ const LotteryPage = () => {
                   isLoading={resultsLoading}
                 />
                 {resultsError && (
-                  <div className="text-red-500 text-center mt-4 p-4 bg-red-500/10 rounded-lg">
+                  <div className="text-red-500 text-center mt-4 p-4 bg-red-50 dark:bg-red-500/10 rounded-lg">
                     {resultsError}
                   </div>
                 )}
@@ -134,7 +134,7 @@ const LotteryPage = () => {
                   transactions={participations}
                 />
                 {participationsError && (
-                  <div className="text-red-500 text-center mt-4 p-4 bg-red-500/10 rounded-lg">
+                  <div className="text-red-500 text-center mt-4 p-4 bg-red-50 dark:bg-red-500/10 rounded-lg">
                     {participationsError}
                   </div>
                 )}
