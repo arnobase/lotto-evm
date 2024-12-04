@@ -105,3 +105,8 @@ export const CONTRACT_ADDRESSES: ContractAddresses = {
   'Moonbase': '0x991926D5ca21EF2938B5BAffbf4EC24fB55e205e',
   'Shibuya': 'ZkMmwcAsCuFPB13kfXH6aQiJYAfnQYC2qMiK5h1mGKsMX86',
 };
+
+export const QUERY_URL: { [key: string]: string } = {
+  lotto_Minato: 'https://query.substrate.fi/lotto-multichain-subquery-testnet',
+  lotto_Astar: 'https://query.substrate.fi/lotto-multichain-subquery',
+};

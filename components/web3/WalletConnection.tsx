@@ -1,5 +1,5 @@
-import { useWeb3 } from "../contexts/Web3Context";
-import account_svg from "../public/images/account.svg"
+import { useWeb3 } from "../../contexts/Web3Context";
+import account_svg from "../../public/images/account.svg"
 import ExportedImage from "next-image-export-optimizer";
 
 const headerStyle={
@@ -8,7 +8,7 @@ const headerStyle={
   buttonIconContainer: `flex items-center justify-center p-2`,
 }
 
-export default function WalletConnector() {
+export default function WalletConnection() {
   const { evmAccount, evmConnectWallet, evmDisconnectWallet } = useWeb3();
 
   // Fonction pour formater l'adresse

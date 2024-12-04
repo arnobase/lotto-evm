@@ -1,80 +1,75 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import axios from 'axios';
+import contractABI from '../libs/abi/LottoClient.json';
+import { useWeb3 } from '../contexts/Web3Context';
 
-// ABI du contrat LottoClient
-import abi from "../libs/abi/LottoClient.json";
-
-// Define an interface for the input data
-interface InputData {
-  type: string;
-  name: string;
-  value?: string | number | boolean;
-}
-
-// Define an interface for the decoded data
 interface DecodedData {
   name: string;
-  inputs: InputData[];
+  inputs: {
+    name: string;
+    value: any;
+  }[];
 }
 
-const useDecodeTransaction = (txHash: string) => {
+interface UseDecodeTransactionResult {
+  decodedData: DecodedData | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+const useDecodeTransaction = (transactionHash: string): UseDecodeTransactionResult => {
   const [decodedData, setDecodedData] = useState<DecodedData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<Error | null>(null);
+  const { evmCustomProvider } = useWeb3();
 
   useEffect(() => {
-    if (!txHash?.trim()) {
-      setLoading(false);
-      return;
-    }
-
-    const getTransactionDetails = async (hash: string) => {
-      const url = `https://soneium-minato.blockscout.com/api/v2/transactions/${hash}/logs`;
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            'accept': 'application/json',
-          },
-        });
-        return response.data;
-      } catch (error: unknown) {
-        throw new Error(`API request error: ${(error as Error).message}`);
-      }
-    };
-
     const decodeTransaction = async () => {
+      if (!transactionHash || !evmCustomProvider) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const txDetails = await getTransactionDetails(txHash);
+        setLoading(true);
+        setError(null);
         
-        if (!txDetails || !txDetails.items || txDetails.items.length === 0) {
-          throw new Error("Transaction non trouvée ou sans données d'entrée.");
+        // Récupérer la transaction
+        const tx = await evmCustomProvider.getTransaction(transactionHash);
+        if (!tx || !tx.data) {
+          throw new Error('Transaction not found or has no data');
         }
 
-        const decoded = txDetails.items[0].decoded; // Accéder aux données décodées
-
-        if (!decoded || !decoded.parameters) {
-          throw new Error("Échec du décodage de la transaction.");
+        // Créer une interface pour décoder les données
+        const iface = new ethers.Interface(contractABI.abi);
+        
+        // Décoder les données de la transaction
+        const decodedData = iface.parseTransaction({ data: tx.data });
+        
+        if (!decodedData) {
+          throw new Error('Failed to decode transaction data');
         }
 
-        const decodedData: DecodedData = {
-          name: decoded.method_call,
-          inputs: decoded.parameters.map((param: { type: string; name: string; value?: string | number | boolean }) => ({
-            type: param.type,
-            name: param.name,
-            value: param.value,
-          })),
+        // Formater les données décodées
+        const formattedData: DecodedData = {
+          name: decodedData.name,
+          inputs: decodedData.args.map((arg, index) => ({
+            name: decodedData.fragment.inputs[index].name,
+            value: arg
+          }))
         };
-        setDecodedData(decodedData);
+
+        setDecodedData(formattedData);
       } catch (err) {
-        setError((err as Error).message);
+        console.error('Error decoding transaction:', err);
+        setError(err instanceof Error ? err : new Error('Failed to decode transaction'));
       } finally {
         setLoading(false);
       }
     };
 
     decodeTransaction();
-  }, [txHash]);
+  }, [transactionHash, evmCustomProvider]);
 
   return { decodedData, loading, error };
 };
