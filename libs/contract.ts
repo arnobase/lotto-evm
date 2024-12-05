@@ -4,6 +4,7 @@ import contractABI from './abi/LottoClient.json';
 import { NETWORKS, CONTRACT_ADDRESSES } from './constants';
 import toast from 'react-hot-toast';
 import { renderTransactionToast } from '../components/common/Toast/TransactionToast';
+import { getExplorerUrl } from './networks';
 
 function getContractAddress(networkName: string): string {
   const address = CONTRACT_ADDRESSES[networkName];
@@ -57,6 +58,35 @@ export class LotteryContract {
       return [];
     } catch (error) {
       console.error("Failed to query contract:", error);
+      throw error;
+    }
+  }
+
+  async queryNumber(method: string): Promise<number | null> {
+    if (!this.queryContract) {
+      throw new Error('Contract not initialized');
+    }
+
+    try {
+      console.log(`Querying number with method: ${method}`);
+      const contractFunction = this.queryContract.getFunction(method);
+      if (!contractFunction) {
+        console.error(`Method ${method} not found in contract`);
+        return null;
+      }
+
+      const result = await contractFunction.staticCall();
+      console.log(`Raw result from ${method}:`, result);
+      
+      if (result !== undefined) {
+        const number = Number(result.toString());
+        console.log(`Parsed number from ${method}:`, number);
+        return number;
+      }
+
+      return null;
+    } catch (error) {
+      console.error(`Failed to query number with ${method}:`, error);
       throw error;
     }
   }

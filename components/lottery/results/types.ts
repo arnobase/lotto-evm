@@ -20,6 +20,7 @@ export interface WinningNumbersProps {
 
 export interface TransactionHistoryProps {
   transactions: LotteryResult[];
+  totalCount: number;
 }
 
 export interface TransactionParams {

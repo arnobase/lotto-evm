@@ -4,22 +4,38 @@ import { ParticipationFormProps } from './types';
 import NumberSelector from './NumberSelector';
 import SubmitButton from './SubmitButton';
 import LastParticipation from './LastParticipation';
-import { renderTransactionToast } from '../../../common/Toast/TransactionToast';
+import { useWeb3 } from '../../../../contexts/Web3Context';
+import { useLastParticipations } from '../../../../hooks/useLastParticipations';
+import { useCurrentDraw } from '../../../../hooks/useCurrentDraw';
 
 const MAX_SELECTIONS = 4;
 
+const toastStyle = {
+  style: {
+    background: 'var(--toast-background)',
+    color: 'var(--toast-text)',
+    border: '1px solid var(--toast-border)'
+  },
+  iconTheme: {
+    primary: 'var(--toast-icon)',
+    secondary: 'var(--toast-icon-background)'
+  },
+  className: 'custom-toast'
+};
+
 const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
+  const { evmNetwork } = useWeb3();
+  const { refresh: refreshParticipations, addParticipation } = useLastParticipations();
+  const { drawNumber } = useCurrentDraw();
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [canParticipate, setCanParticipate] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [lastParticipation, setLastParticipation] = useState<number[]>([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const checkDryRun = useCallback(async () => {
     if (selectedNumbers.length === MAX_SELECTIONS) {
-      console.log('Checking dry run with numbers:', selectedNumbers);
       const dryRunRes = await contract.dryRun("participate", [selectedNumbers]);
-      console.log('Dry run result:', dryRunRes);
       setCanParticipate(dryRunRes.success);
     } else {
       setCanParticipate(false);
@@ -48,10 +64,8 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
   };
 
   const handleParticipate = async () => {
-    if (isLoading) {
-      console.log('Already loading, skipping participation');
-      return;
-    }
+    if (isLoading) return;
+    
     if (selectedNumbers.length < MAX_SELECTIONS) {
       setErrorMessage(`Please select ${MAX_SELECTIONS} numbers`);
       return;
@@ -59,71 +73,72 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
     
     if (canParticipate) {
       const toastId = toast.loading("Sending transaction...", {
-        duration: Infinity
+        duration: Infinity,
+        ...toastStyle
       });
       
       try {
-        console.log('Starting participation with numbers:', selectedNumbers);
         setIsLoading(true);
         setErrorMessage("");
 
-        console.log('Calling contract.doTx...');
         const tx = await contract.doTx({
           method: "participate",
           args: [selectedNumbers],
           toastId: toastId.toString()
         });
-        console.log('Transaction completed successfully:', tx);
 
+        // Ajouter immédiatement à l'historique local
         if (tx?.hash) {
-          setLastParticipation([...selectedNumbers]);
+          addParticipation({
+            numbers: selectedNumbers,
+            chain: evmNetwork || 'unknown',
+            hash: tx.hash,
+            drawNumber: drawNumber || undefined
+          });
         }
+
         setSelectedNumbers([]);
+        
+        // Forcer le rafraîchissement du composant
+        setRefreshKey(prev => prev + 1);
+        
+        // Rafraîchir l'indexeur en arrière-plan
+        setTimeout(() => {
+          refreshParticipations();
+        }, 2000);
       } catch (error) {
-        console.error("Participation error:", error);
         if (error instanceof Error && 
             (error.message.includes('user rejected') || 
              error.message.includes('User denied transaction'))) {
-          console.log('Updating toast for cancellation - toastId:', toastId);
-          toast.error('Transaction cancelled', { 
-            id: toastId, 
-            duration: 4000
-          });
+          toast.dismiss(toastId);
+          toast.error("Transaction cancelled", toastStyle);
+        } else {
+          toast.error("Transaction failed", { id: toastId, ...toastStyle });
         }
       } finally {
-        console.log('Setting loading state to false');
         setIsLoading(false);
       }
-    } else {
-      console.log('Cannot participate: dry run check failed');
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <NumberSelector
         selectedNumbers={selectedNumbers}
         onNumberSelect={handleNumberSelect}
         maxSelections={MAX_SELECTIONS}
       />
-      
+      {errorMessage && (
+        <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
+      )}
       <SubmitButton
         canParticipate={canParticipate}
         onParticipate={handleParticipate}
         isLoading={isLoading}
       />
-      
-      {errorMessage && (
-        <div className="text-red-500 text-center mt-2 text-sm">
-          {errorMessage}
-        </div>
-      )}
-
-      {lastParticipation.length > 0 && (
-        <LastParticipation numbers={lastParticipation} />
-      )}
+      <LastParticipation key={refreshKey} />
     </div>
   );
-};
+}
 
 export default ParticipationForm; 

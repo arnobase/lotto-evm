@@ -7,6 +7,7 @@ interface ContractContextType {
   doQuery: (method: string, args: number[][]) => Promise<LotteryResult[]>;
   doTx: (params: TransactionParams) => Promise<{ hash: string }>;
   dryRun: (method: string, args: number[][]) => Promise<{ success: boolean }>;
+  queryNumber: (method: string) => Promise<number | null>;
 }
 
 const ContractContext = createContext<ContractContextType | undefined>(undefined);
@@ -59,8 +60,15 @@ export function ContractProvider({ children }: ContractProviderProps) {
     return contract.dryRun(method, args);
   };
 
+  const queryNumber = async (method: string): Promise<number | null> => {
+    if (!contract) {
+      throw new Error('Contract not initialized');
+    }
+    return contract.queryNumber(method);
+  };
+
   return (
-    <ContractContext.Provider value={{ doQuery, doTx, dryRun }}>
+    <ContractContext.Provider value={{ doQuery, doTx, dryRun, queryNumber }}>
       {children}
     </ContractContext.Provider>
   );

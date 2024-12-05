@@ -27,14 +27,23 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, isLoading }) =
     <div className="space-y-6">
       {results.map((result) => (
         <div key={result.drawNumber} className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-            Draw #{result.drawNumber}
-          </h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                  #{result.drawNumber}
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                Latest Draw
+              </h3>
+            </div>
+          </div>
           <div className="flex flex-wrap gap-4 justify-center">
             {result.numbers.map((number, index) => (
               <div
                 key={index}
-                className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-semibold"
+                className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white font-semibold shadow-lg"
               >
                 {number}
               </div>
