@@ -3,6 +3,7 @@ import { useWeb3 } from '../../contexts/Web3Context';
 import { useContract } from '../../contexts/ContractContext';
 import { useLotteryResults } from '../../hooks/useLotteryResults';
 import { useLotteryParticipations } from '../../hooks/useLotteryParticipations';
+import { useCurrentDraw } from '../../hooks/useCurrentDraw';
 import ParticipationForm from './participation/ParticipationForm';
 import ResultsDisplay from './results/ResultsDisplay';
 import TransactionHistory from './results/TransactionHistory';
@@ -21,6 +22,7 @@ const LotteryPage: React.FC = () => {
   const { drawResults, isLoading: resultsLoading } = useLotteryResults();
   const { totalParticipations } = useLotteryParticipations();
   const { shouldShow, numbers, onComplete, showLiveDraw } = useLiveDraw();
+  const { drawNumber } = useCurrentDraw();
   const [selectedTab, setSelectedTab] = useState(0);
 
   const handleTabChange = (index: number) => {
@@ -33,7 +35,7 @@ const LotteryPage: React.FC = () => {
         <LiveDraw
           winningNumbers={numbers}
           onComplete={onComplete}
-          drawNumber={drawResults[0]?.drawNumber || '0'}
+          drawNumber={drawNumber?.toString() || '0'}
         />
       )}
       <div className="container mx-auto px-4 py-8">
@@ -44,14 +46,19 @@ const LotteryPage: React.FC = () => {
                 <div className="h-16 w-16 bg-emerald-100 dark:bg-emerald-900/50 rounded-2xl flex items-center justify-center transform rotate-[-5deg] hover:rotate-[5deg] transition-transform duration-300">
                   <TicketIcon className="h-10 w-10 text-emerald-500" />
                 </div>
-                <h1 className="text-5xl font-black bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 bg-clip-text text-transparent transform hover:scale-105 transition-transform duration-300">
-                  LOTTERY
-                </h1>
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400/20 to-emerald-300/20 blur-xl"></div>
+                  <h1 className="relative text-7xl font-black tracking-tight">
+                    <span className="bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-300 inline-block text-transparent bg-clip-text">
+                      Lotto
+                    </span>
+                  </h1>
+                </div>
               </div>
-              {drawResults && drawResults[0] && (
-                <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg transform hover:scale-105 transition-transform duration-300">
+              {drawNumber && (
+                <div className="px-4 py-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg">
                   <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">
-                    Draw #{drawResults[0].drawNumber}
+                    Draw #{drawNumber}
                   </span>
                 </div>
               )}
