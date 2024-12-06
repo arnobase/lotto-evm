@@ -24,7 +24,7 @@ const toastStyle = {
 };
 
 const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
-  const { evmNetwork } = useWeb3();
+  const { evmNetwork, evmAccount, evmConnectWallet } = useWeb3();
   const { refresh: refreshParticipations, addParticipation } = useLastParticipations();
   const { drawNumber } = useCurrentDraw();
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
@@ -87,7 +87,6 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
           toastId: toastId.toString()
         });
 
-        // Ajouter immédiatement à l'historique local
         if (tx?.hash) {
           addParticipation({
             numbers: selectedNumbers,
@@ -98,11 +97,8 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
         }
 
         setSelectedNumbers([]);
-        
-        // Forcer le rafraîchissement du composant
         setRefreshKey(prev => prev + 1);
         
-        // Rafraîchir l'indexeur en arrière-plan
         setTimeout(() => {
           refreshParticipations();
         }, 2000);
@@ -121,6 +117,8 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
     }
   };
 
+  const showConnectMessage = selectedNumbers.length === MAX_SELECTIONS && !evmAccount;
+
   return (
     <div className="space-y-8">
       <NumberSelector
@@ -131,14 +129,30 @@ const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
       {errorMessage && (
         <div className="text-red-500 text-sm mt-2">{errorMessage}</div>
       )}
+      {showConnectMessage && (
+        <div className="flex flex-col items-center gap-4 p-6 bg-gradient-to-r from-purple-50 to-fuchsia-50 dark:from-purple-950/30 dark:to-fuchsia-950/30 rounded-lg border border-purple-100 dark:border-purple-800">
+          <p className="text-lg font-medium text-purple-700 dark:text-purple-300 text-center">
+            🎮 Ready to play? One last step!
+          </p>
+          <p className="text-purple-600 dark:text-purple-400 text-center">
+            Connect your wallet to try your luck with these numbers!
+          </p>
+          <button
+            onClick={evmConnectWallet}
+            className="px-6 py-2 bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:from-purple-600 hover:to-fuchsia-600 text-white font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+          >
+            Connect Wallet
+          </button>
+        </div>
+      )}
       <SubmitButton
-        canParticipate={canParticipate}
+        canParticipate={canParticipate && !!evmAccount}
         onParticipate={handleParticipate}
         isLoading={isLoading}
       />
       <LastParticipation key={refreshKey} />
     </div>
   );
-}
+};
 
 export default ParticipationForm; 
