@@ -25,7 +25,7 @@ const toastStyle = {
 
 const ParticipationForm: React.FC<ParticipationFormProps> = ({ contract }) => {
   const { evmNetwork, evmAccount, evmConnectWallet } = useWeb3();
-  const { refresh: refreshParticipations, addParticipation } = useLastParticipations();
+  const { refreshParticipations, addParticipation } = useLastParticipations();
   const { drawNumber } = useCurrentDraw();
   const [selectedNumbers, setSelectedNumbers] = useState<number[]>([]);
   const [canParticipate, setCanParticipate] = useState<boolean>(false);

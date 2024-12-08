@@ -210,7 +210,7 @@ const TransactionHistory: React.FC = () => {
           </div>
         ) : transactions.length > 0 ? (
           paginatedTransactions.map((tx) => (
-            <div key={tx.hash} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+            <div key={tx.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex flex-wrap items-center gap-2 text-sm">
                   <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">#{tx.drawNumber}</span>
@@ -220,7 +220,7 @@ const TransactionHistory: React.FC = () => {
                 <div className="flex gap-2 flex-wrap justify-end mt-4 sm:mt-0">
                   {tx.numbers.map((number, index) => (
                     <NumberBall
-                      key={`${tx.hash}-${index}`}
+                      key={`${tx.id}-${index}`}
                       number={number}
                       selected={true}
                       onClick={() => {}}

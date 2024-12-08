@@ -3,7 +3,7 @@ import NumberBall from '../../../common/NumberBall';
 import { formatAddress } from '../../../../utils/format';
 import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { NETWORKS } from '../../../../libs/constants';
-import { useLastParticipations } from '../../../../hooks/useLastParticipations';
+import { useLastParticipations, CombinedParticipation } from '../../../../hooks/useLastParticipations';
 
 const LastParticipation: React.FC = () => {
   const { participations, isLoading } = useLastParticipations();
@@ -38,10 +38,10 @@ const LastParticipation: React.FC = () => {
         Last Participations
       </h3>
       <div className="space-y-4">
-        {participations.map((participation, index) => (
+        {participations.map((participation: CombinedParticipation, index: number) => (
           <div key={participation.hash} className="flex items-center gap-4">
             <div className="flex gap-2 flex-wrap min-w-[160px]">
-              {participation.numbers.map((number, numIndex) => (
+              {participation.numbers.map((number: number, numIndex: number) => (
                 <NumberBall
                   key={numIndex}
                   number={number}
