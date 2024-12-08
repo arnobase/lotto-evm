@@ -8,13 +8,20 @@ const MAX_HISTORY = 5;
 // Mapping des noms de réseaux entre l'indexeur et notre configuration
 const NETWORK_NAME_MAPPING: { [key: string]: string } = {
   'lotto_Minato': 'Minato',
-  'Moonbeam (testnet)': 'Moonbase',
-  'lotto_Shibuya': 'Shibuya'
+  'Moonbase Alpha': 'Moonbase',
+  'lotto_Shibuya': 'Shibuya',
+  // Ajout des mappings inverses pour la cohérence
+  'Minato': 'Minato',
+  'Moonbase': 'Moonbase',
+  'Shibuya': 'Shibuya'
 };
 
 // Fonction utilitaire pour normaliser les noms de réseaux
 const normalizeNetworkName = (chain: string): string => {
-  return NETWORK_NAME_MAPPING[chain] || chain;
+  console.log('Normalizing network name:', chain);
+  const normalized = NETWORK_NAME_MAPPING[chain] || chain;
+  console.log('Normalized to:', normalized);
+  return normalized;
 };
 
 interface StoredParticipation {
@@ -25,12 +32,8 @@ interface StoredParticipation {
   drawNumber?: string;
 }
 
-export interface CombinedParticipation {
-  numbers: number[];
-  chain: string;
-  hash: string;
+export interface CombinedParticipation extends StoredParticipation {
   timestamp?: string;
-  drawNumber?: string;
 }
 
 const formatDate = (date: Date): string => {
@@ -84,17 +87,28 @@ export const useLastParticipations = () => {
   // Combiner les participations locales et de l'indexeur
   const participations = [
     ...localParticipations,
-    ...indexerParticipations.map(p => ({
-      numbers: p.numbers,
-      chain: normalizeNetworkName(p.chain),
-      hash: p.hash,
-      drawNumber: p.drawNumber
-    }))
+    ...indexerParticipations.map(p => {
+      console.log('Processing indexer participation:', p);
+      const normalized = {
+        numbers: p.numbers.map(n => parseInt(n, 10)),
+        chain: normalizeNetworkName(p.chain),
+        hash: p.hash,
+        drawNumber: p.drawNumber,
+        timestamp: p.timestamp
+      };
+      console.log('Normalized participation:', normalized);
+      return normalized;
+    })
   ]
   // Dédupliquer par hash
   .filter((participation, index, self) => 
     index === self.findIndex(p => p.hash === participation.hash)
   )
+  // Trier par timestamp décroissant
+  .sort((a, b) => {
+    if (!a.timestamp || !b.timestamp) return 0;
+    return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+  })
   // Prendre les 5 plus récentes
   .slice(0, MAX_HISTORY);
 

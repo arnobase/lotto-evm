@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from "react";
 import { ethers } from "ethers";
 import { NETWORKS } from "../libs/constants";
 import toast from 'react-hot-toast';
@@ -6,11 +6,17 @@ import { getFromStorage, setToStorage } from "../libs/storage";
 
 type MetaMaskEventHandler = (args: unknown[]) => void;
 
+interface MetaMaskError extends Error {
+  code: number;
+  message: string;
+}
+
 declare global {
   interface Window {
     ethereum: ethers.Eip1193Provider & {
       on(eventName: string, handler: MetaMaskEventHandler): void;
       removeListener(eventName: string, handler: MetaMaskEventHandler): void;
+      request(args: { method: string; params?: unknown[] }): Promise<unknown>;
     };
   }
 }
@@ -38,6 +44,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [evmNetwork, setEvmNetwork] = useState<string>("Minato");
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
+  const isNetworkSwitchingRef = useRef(false);
 
   const clearWalletState = useCallback(() => {
     console.log("🧹 Clearing wallet state");
@@ -45,38 +52,6 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     setEvmSigner(null);
     setToStorage("lotto-evm-account", undefined);
   }, []);
-
-  // Gestionnaires d'événements pour les changements de wallet
-  const handleAccountsChanged = useCallback((accounts: unknown[]) => {
-    console.log("👥 Accounts changed event:", accounts);
-    if (!Array.isArray(accounts) || accounts.length === 0) {
-      console.log("📴 Wallet disconnected");
-      clearWalletState();
-    } else {
-      console.log("🔌 Account updated:", accounts[0]);
-      checkAndUpdateConnection();
-    }
-  }, [clearWalletState]);
-
-  const handleChainChanged = useCallback((_chainId: unknown) => {
-    console.log("⛓️ Chain changed:", _chainId);
-    window.location.reload();
-  }, []);
-
-  // Initialisation des écouteurs d'événements
-  useEffect(() => {
-    console.log("🎧 Setting up event listeners");
-    if (window.ethereum) {
-      window.ethereum.on('accountsChanged', handleAccountsChanged);
-      window.ethereum.on('chainChanged', handleChainChanged);
-
-      return () => {
-        console.log("🧹 Cleaning up event listeners");
-        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
-        window.ethereum.removeListener('chainChanged', handleChainChanged);
-      };
-    }
-  }, [handleAccountsChanged, handleChainChanged]);
 
   // Vérification et initialisation du provider
   const initializeProvider = useCallback(async () => {
@@ -104,7 +79,6 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     if (!window.ethereum) return;
 
     try {
-      // Vérifie silencieusement si le site est déjà autorisé
       const accounts = await window.ethereum.request({ method: 'eth_accounts' }) as string[];
       
       if (accounts.length > 0) {
@@ -113,23 +87,15 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
         const provider = await initializeProvider();
         if (!provider) return;
 
-        // Vérifie le réseau actuel
-        const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
-        const targetNetwork = NETWORKS.find(net => net.name === evmNetwork && net.type === 'EVM');
-
-        if (targetNetwork && currentChainId !== targetNetwork.info.chainId) {
-          console.log("⚠️ Wrong network, switching to:", targetNetwork.name);
-          await switchEvmNetwork(targetNetwork.name);
-        }
-
         const signer = await provider.getSigner();
         setEvmSigner(signer);
         setEvmAccount(signer);
         setToStorage("lotto-evm-account", accounts[0]);
 
         // Configure le custom provider
-        if (targetNetwork?.type === 'EVM') {
-          const customProvider = new ethers.JsonRpcProvider(targetNetwork.info.rpcUrls[0]);
+        const network = NETWORKS.find(net => net.name === evmNetwork && net.type === 'EVM');
+        if (network?.type === 'EVM') {
+          const customProvider = new ethers.JsonRpcProvider(network.info.rpcUrls[0]);
           setEvmCustomProvider(customProvider);
         }
       } else {
@@ -142,7 +108,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     }
   }, [evmNetwork, initializeProvider, clearWalletState]);
 
-  // Connexion explicite au wallet (quand l'utilisateur clique sur le bouton)
+  // Connexion explicite au wallet
   const evmConnectWallet = useCallback(async () => {
     console.log("🔌 Explicitly connecting wallet");
     setIsConnecting(true);
@@ -158,7 +124,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("❌ Connection error:", error);
-      const typedError = error as { code: number; message: string };
+      const typedError = error as MetaMaskError;
       
       switch (typedError.code) {
         case 4001:
@@ -187,25 +153,106 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
     toast.success("Wallet disconnected successfully");
   }, [clearWalletState]);
 
+  // Gestionnaire d'événements pour les changements de wallet
+  const handleAccountsChanged = useCallback((accounts: unknown[]) => {
+    console.log("👥 Accounts changed event:", accounts);
+    if (!Array.isArray(accounts) || accounts.length === 0) {
+      console.log("📴 Wallet disconnected");
+      clearWalletState();
+    } else {
+      console.log("🔌 Account updated:", accounts[0]);
+      checkAndUpdateConnection();
+    }
+  }, [clearWalletState, checkAndUpdateConnection]);
+
+  // Gestionnaire d'événements pour les changements de chaîne
+  const handleChainChanged = useCallback((_chainId: unknown) => {
+    console.log("⛓️ Chain changed:", _chainId);
+    const chainId = (_chainId as string).toLowerCase();
+    const network = NETWORKS.find(n => n.info.chainId.toLowerCase() === chainId);
+    if (network) {
+      console.log("✅ Setting network to:", network.name);
+      setEvmNetwork(network.name);
+    } else {
+      console.log("❌ Unknown network chainId:", chainId);
+    }
+  }, []);
+
+  // Initialisation des écouteurs d'événements
+  useEffect(() => {
+    console.log("🎧 Setting up event listeners");
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('chainChanged', handleChainChanged);
+
+      return () => {
+        console.log("🧹 Cleaning up event listeners");
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('chainChanged', handleChainChanged);
+      };
+    }
+  }, [handleAccountsChanged, handleChainChanged]);
+
+  // Vérification initiale de la connexion
+  useEffect(() => {
+    checkAndUpdateConnection();
+  }, [checkAndUpdateConnection]);
+
   // Changement de réseau
   const switchEvmNetwork = useCallback(async (networkName: string) => {
+    // Empêcher les requêtes multiples avec une référence
+    if (isNetworkSwitchingRef.current) {
+      console.log("🚫 Network switch already in progress");
+      return;
+    }
+
     console.log("🔄 Switching network to:", networkName);
-    if (!window.ethereum) return;
+    if (!window.ethereum) {
+      console.error("❌ No ethereum provider found");
+      return;
+    }
 
     const network = NETWORKS.find(n => n.name === networkName);
-    if (!network) return;
+    if (!network) {
+      console.error("❌ Network not found:", networkName);
+      return;
+    }
+
+    let toastId: string | undefined;
 
     try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: network.info.chainId }],
-      });
+      isNetworkSwitchingRef.current = true;
+
+      // Vérifier d'abord le réseau actuel
+      const currentChainId = await window.ethereum.request({ method: 'eth_chainId' }) as string;
+      console.log("Current chain ID:", currentChainId, "Target chain ID:", network.info.chainId);
       
-      setEvmNetwork(networkName);
-    } catch (error) {
-      const switchError = error as { code: number };
-      if (switchError.code === 4902) {
-        try {
+      // Normaliser les chainId pour la comparaison
+      const normalizedCurrentChainId = currentChainId.toLowerCase();
+      const normalizedTargetChainId = network.info.chainId.toLowerCase();
+      
+      if (normalizedCurrentChainId === normalizedTargetChainId) {
+        console.log("✅ Already on the correct network");
+        setEvmNetwork(networkName);
+        return;
+      }
+
+      console.log("🔄 Requesting chain switch to:", network.info.chainId);
+      
+      // Afficher un toast de chargement
+      toastId = toast.loading("Switching network...", { duration: Infinity });
+
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: network.info.chainId }],
+        });
+      } catch (error) {
+        const switchError = error as MetaMaskError;
+        
+        // Si le réseau n'existe pas, on essaie de l'ajouter
+        if (switchError.code === 4902) {
+          console.log("🔄 Network not found, attempting to add it");
           await window.ethereum.request({
             method: 'wallet_addEthereumChain',
             params: [{
@@ -216,22 +263,49 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
               blockExplorerUrls: network.info.blockExplorerUrls
             }],
           });
-          setEvmNetwork(networkName);
-        } catch (addError) {
-          console.error('❌ Error adding network:', addError);
-          toast.error("Failed to add network to wallet");
+        } else if (switchError.code === -32002) {
+          // Si une requête est déjà en cours, on arrête ici
+          if (toastId) toast.dismiss(toastId);
+          toast.error("Network switch already pending. Please check MetaMask.");
+          return;
+        } else if (switchError.code === 4001) {
+          // Si l'utilisateur a refusé, on arrête ici
+          if (toastId) toast.dismiss(toastId);
+          toast.error("Network switch cancelled");
+          return;
+        } else {
+          throw switchError;
         }
-      } else {
-        console.error('❌ Error switching network:', switchError);
-        toast.error("Failed to switch network");
       }
+
+      // Attendre un peu que le changement soit effectif
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Vérifier que le changement a bien eu lieu
+      const newChainId = await window.ethereum.request({ method: 'eth_chainId' }) as string;
+      console.log("✅ Current chain after switch:", newChainId);
+      
+      // Normaliser le nouveau chainId pour la comparaison
+      const normalizedNewChainId = newChainId.toLowerCase();
+      
+      if (normalizedNewChainId === normalizedTargetChainId) {
+        console.log("✅ Network switch successful");
+        if (toastId) toast.dismiss(toastId);
+        toast.success("Network switched successfully");
+        setEvmNetwork(networkName);
+      } else {
+        console.error("❌ Chain ID mismatch after switch. Expected:", normalizedTargetChainId, "Got:", normalizedNewChainId);
+        if (toastId) toast.dismiss(toastId);
+        toast.error("Network switch failed - please try again");
+      }
+    } catch (error) {
+      console.error('❌ Unexpected error switching network:', error);
+      if (toastId) toast.dismiss(toastId);
+      toast.error("Failed to switch network. Please try again.");
+    } finally {
+      isNetworkSwitchingRef.current = false;
     }
   }, []);
-
-  // Vérification initiale de la connexion
-  useEffect(() => {
-    checkAndUpdateConnection();
-  }, [checkAndUpdateConnection]);
 
   return (
     <Web3Context.Provider
