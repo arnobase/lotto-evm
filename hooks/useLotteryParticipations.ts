@@ -139,7 +139,8 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
   }, [client, filter, first]);
 
   const exportAllParticipations = useCallback(async (
-    onProgress?: (loaded: number, total: number) => void
+    onProgress?: (loaded: number, total: number) => void,
+    signal?: AbortSignal
   ) => {
     try {
       const initialResult = await client.query<QueryResponse>({
@@ -149,7 +150,12 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
           first: 100,
           filter
         },
-        fetchPolicy: 'no-cache'
+        fetchPolicy: 'no-cache',
+        context: {
+          fetchOptions: {
+            signal
+          }
+        }
       });
 
       let allData = [...initialResult.data.participations.nodes];
@@ -159,6 +165,10 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
       onProgress?.(allData.length, totalCount);
 
       while (offset < totalCount) {
+        if (signal?.aborted) {
+          throw new Error('Export cancelled');
+        }
+
         const result = await client.query<QueryResponse>({
           query: EXPORT_PARTICIPATIONS,
           variables: {
@@ -166,7 +176,12 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
             first: 100,
             filter
           },
-          fetchPolicy: 'no-cache'
+          fetchPolicy: 'no-cache',
+          context: {
+            fetchOptions: {
+              signal
+            }
+          }
         });
 
         if (result.data.participations.nodes.length === 0) break;
@@ -178,6 +193,9 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
 
       return allData;
     } catch (error) {
+      if (error instanceof Error && error.message === 'Export cancelled') {
+        throw error;
+      }
       console.error('Error exporting participations:', error);
       return [];
     }

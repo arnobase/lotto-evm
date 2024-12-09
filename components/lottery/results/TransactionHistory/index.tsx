@@ -15,6 +15,7 @@ const TransactionHistory: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   const {
     participations: transactions,
@@ -107,31 +108,89 @@ const TransactionHistory: React.FC = () => {
 
   const handleExport = async () => {
     setIsExporting(true);
-    const exportToastId = toast.loading('Preparing export...');
+    const controller = new AbortController();
+    setAbortController(controller);
+
+    const exportToastId = toast.loading(
+      <div className="flex items-center gap-2">
+        <div>Preparing export...</div>
+        <button
+          onClick={() => {
+            controller.abort();
+            setAbortController(null);
+            toast.dismiss(exportToastId);
+            toast.error('Export cancelled');
+            setIsExporting(false);
+          }}
+          className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>,
+      { duration: Infinity }
+    );
 
     try {
-      const allData = await exportAllParticipations((loaded, total) => {
-        toast.loading(
-          `Loading data... ${loaded}/${total}`,
-          { id: exportToastId }
+      const allData = await exportAllParticipations(
+        (loaded, total) => {
+          if (controller.signal.aborted) {
+            throw new Error('Export cancelled');
+          }
+          toast.loading(
+            <div className="flex items-center gap-2">
+              <div>Loading data... {loaded}/{total}</div>
+              <button
+                onClick={() => {
+                  controller.abort();
+                  setAbortController(null);
+                  toast.dismiss(exportToastId);
+                  toast.error('Export cancelled');
+                  setIsExporting(false);
+                }}
+                className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>,
+            { id: exportToastId }
+          );
+        },
+        controller.signal
+      );
+
+      if (!controller.signal.aborted) {
+        downloadCSV(allData.map(node => ({
+          numbers: node.numbers.map(n => parseInt(n, 10)),
+          transactionHash: node.id,
+          hash: node.id,
+          drawNumber: node.drawNumber,
+          chain: node.chain,
+          accountId: node.accountId
+        })), generateExportFilename());
+
+        toast.success(
+          <div className="flex items-center justify-between gap-2">
+            <div>{`Export completed! ${allData.length} records exported`}</div>
+            <button
+              onClick={() => toast.dismiss(exportToastId)}
+              className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+            >
+              Dismiss
+            </button>
+          </div>,
+          { id: exportToastId, duration: 5000 }
         );
-      });
-
-      downloadCSV(allData.map(node => ({
-        numbers: node.numbers.map(n => parseInt(n, 10)),
-        transactionHash: node.id,
-        hash: node.id,
-        drawNumber: node.drawNumber,
-        chain: node.chain,
-        accountId: node.accountId
-      })), generateExportFilename());
-
-      toast.success(`Export completed! ${allData.length} records exported`, { id: exportToastId });
+      }
     } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Export failed', { id: exportToastId });
+      if (error instanceof Error && error.message === 'Export cancelled') {
+        // L'export a été annulé, le message a déjà été affiché
+      } else {
+        console.error('Export error:', error);
+        toast.error('Export failed', { id: exportToastId });
+      }
     } finally {
       setIsExporting(false);
+      setAbortController(null);
     }
   };
 
