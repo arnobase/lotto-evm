@@ -13,20 +13,16 @@ export interface Participation {
 interface QueryResponse {
   participations: {
     nodes: Participation[];
-    pageInfo: {
-      hasNextPage: boolean;
-      endCursor: string;
-    };
     totalCount: number;
   };
 }
 
 const GET_PARTICIPATIONS = gql`
-  query GetParticipations($after: Cursor, $filter: ParticipationFilter, $first: Int!) {
+  query GetParticipations($offset: Int!, $filter: ParticipationFilter, $first: Int!) {
     participations(
-      orderBy: [TIMESTAMP_DESC, ID_DESC]
+      orderBy: [TIMESTAMP_DESC]
       first: $first
-      after: $after
+      offset: $offset
       filter: $filter
     ) {
       nodes {
@@ -37,9 +33,26 @@ const GET_PARTICIPATIONS = gql`
         chain
         timestamp
       }
-      pageInfo {
-        hasNextPage
-        endCursor
+      totalCount
+    }
+  }
+`;
+
+const EXPORT_PARTICIPATIONS = gql`
+  query ExportParticipations($offset: Int!, $filter: ParticipationFilter, $first: Int!) {
+    participations(
+      orderBy: [TIMESTAMP_DESC]
+      first: $first
+      offset: $offset
+      filter: $filter
+    ) {
+      nodes {
+        id
+        drawNumber
+        accountId
+        numbers
+        chain
+        timestamp
       }
       totalCount
     }
@@ -67,85 +80,108 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
     ? filterEntries.reduce((acc, curr) => ({ ...acc, ...curr }), {})
     : undefined;
 
-  const { data, loading, error, refetch } = useQuery<QueryResponse>(GET_PARTICIPATIONS, {
+  const { data, loading, error, fetchMore } = useQuery<QueryResponse>(GET_PARTICIPATIONS, {
     variables: { 
-      after: null,
+      offset: 0,
       filter,
       first
     },
-    fetchPolicy: 'cache-and-network'
+    fetchPolicy: 'cache-first',
+    nextFetchPolicy: 'cache-first'
   });
 
   const loadMore = useCallback(async () => {
-    if (!data?.participations.pageInfo.hasNextPage) {
+    if (!data?.participations.nodes.length) {
       return null;
     }
 
     try {
-      const result = await client.query<QueryResponse>({
-        query: GET_PARTICIPATIONS,
+      const result = await fetchMore({
         variables: {
-          after: data.participations.pageInfo.endCursor,
+          offset: data.participations.nodes.length,
           filter,
           first
+        },
+        updateQuery: (prev, { fetchMoreResult }) => {
+          if (!fetchMoreResult) return prev;
+          return {
+            participations: {
+              ...fetchMoreResult.participations,
+              nodes: [...prev.participations.nodes, ...fetchMoreResult.participations.nodes]
+            }
+          };
         }
       });
-
-      // Mettre à jour le cache manuellement
-      const existingData = client.readQuery<QueryResponse>({
-        query: GET_PARTICIPATIONS,
-        variables: { after: null, filter, first }
-      });
-
-      if (existingData) {
-        // Dédupliquer les résultats
-        const existingIds = new Set(existingData.participations.nodes.map(node => node.id));
-        const newNodes = result.data.participations.nodes.filter(
-          node => !existingIds.has(node.id)
-        );
-
-        const updatedData = {
-          participations: {
-            __typename: 'ParticipationsConnection',
-            nodes: [...existingData.participations.nodes, ...newNodes],
-            pageInfo: result.data.participations.pageInfo,
-            totalCount: result.data.participations.totalCount
-          }
-        };
-
-        client.writeQuery({
-          query: GET_PARTICIPATIONS,
-          variables: { after: null, filter, first },
-          data: updatedData
-        });
-      }
 
       return result;
     } catch (error) {
       console.error('Error loading more participations:', error);
       return null;
     }
-  }, [client, data, filter, first]);
+  }, [data, fetchMore, filter, first]);
 
   const refreshParticipations = useCallback(async () => {
     try {
-      return await refetch();
+      const result = await client.query<QueryResponse>({
+        query: GET_PARTICIPATIONS,
+        variables: { 
+          offset: 0,
+          filter,
+          first
+        },
+        fetchPolicy: 'network-only'
+      });
+      return result;
     } catch (error) {
       console.error('Error refreshing participations:', error);
       return null;
     }
-  }, [refetch]);
+  }, [client, filter, first]);
 
-  const getQueryVariables = useCallback(() => {
-    return {
-      query: GET_PARTICIPATIONS,
-      variables: {
-        after: null,
-        filter,
-        first
+  const exportAllParticipations = useCallback(async (
+    onProgress?: (loaded: number, total: number) => void
+  ) => {
+    try {
+      const initialResult = await client.query<QueryResponse>({
+        query: EXPORT_PARTICIPATIONS,
+        variables: {
+          offset: 0,
+          first: 100,
+          filter
+        },
+        fetchPolicy: 'no-cache'
+      });
+
+      let allData = [...initialResult.data.participations.nodes];
+      const totalCount = initialResult.data.participations.totalCount;
+      let offset = 100;
+
+      onProgress?.(allData.length, totalCount);
+
+      while (offset < totalCount) {
+        const result = await client.query<QueryResponse>({
+          query: EXPORT_PARTICIPATIONS,
+          variables: {
+            offset,
+            first: 100,
+            filter
+          },
+          fetchPolicy: 'no-cache'
+        });
+
+        if (result.data.participations.nodes.length === 0) break;
+        allData = [...allData, ...result.data.participations.nodes];
+        offset += 100;
+
+        onProgress?.(allData.length, totalCount);
       }
-    };
-  }, [filter, first]);
+
+      return allData;
+    } catch (error) {
+      console.error('Error exporting participations:', error);
+      return [];
+    }
+  }, [client, filter]);
 
   return {
     participations: data?.participations.nodes || [],
@@ -153,9 +189,9 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
     error: error ? error.message : null,
     totalParticipations: data?.participations.totalCount || 0,
     loadedParticipations: data?.participations.nodes?.length || 0,
-    hasNextPage: data?.participations.pageInfo.hasNextPage || false,
+    hasNextPage: (data?.participations.nodes?.length || 0) < (data?.participations.totalCount || 0),
     loadMore,
     refreshParticipations,
-    getQueryVariables
+    exportAllParticipations
   };
 }; 
