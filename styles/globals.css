@@ -116,3 +116,16 @@ body {
 .custom-toast a:hover {
   color: var(--toast-link-hover);
 }
+
+@keyframes width {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-width {
+  animation: width 0.3s ease-out forwards;
+}

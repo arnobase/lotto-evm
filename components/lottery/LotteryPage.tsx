@@ -97,11 +97,6 @@ const LotteryPage: React.FC = () => {
               >
                 <ClockIcon className="h-5 w-5" />
                 <span>History</span>
-                {totalParticipations > 0 && (
-                  <span className="ml-1 px-2 py-0.5 text-xs font-medium bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 rounded-full">
-                    {totalParticipations}
-                  </span>
-                )}
               </button>
             </div>
 
