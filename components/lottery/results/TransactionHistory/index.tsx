@@ -4,7 +4,9 @@ import NumberBall from '../../../common/NumberBall';
 import PaginationControls from '../../../common/PaginationControls';
 import { formatAddress } from '../../../../utils/format';
 import { useLotteryParticipations } from '../../../../hooks/useLotteryParticipations';
+import { useWeb3 } from '../../../../contexts/Web3Context';
 import { toast } from 'react-hot-toast';
+import { XMarkIcon, UserIcon, GlobeAltIcon } from '@heroicons/react/24/outline';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -16,10 +18,12 @@ const TransactionHistory: React.FC = () => {
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [viewMode, setViewMode] = useState<'all' | 'mine'>('all');
+  const { evmAccount } = useWeb3();
 
   const {
     participations: transactions,
-    totalParticipations: totalCount,
+    totalParticipations: displayedCount,
     isLoading,
     loadMore,
     hasNextPage,
@@ -28,7 +32,17 @@ const TransactionHistory: React.FC = () => {
   } = useLotteryParticipations({
     drawNumber: selectedDraw || undefined,
     chain: selectedChain || undefined,
-    accountId: accountSearch || undefined
+    accountId: viewMode === 'mine' ? evmAccount?.address : accountSearch || undefined
+  });
+
+  const {
+    totalParticipations: totalCount
+  } = useLotteryParticipations({});
+
+  const {
+    totalParticipations: userCount
+  } = useLotteryParticipations({
+    accountId: evmAccount?.address
   });
 
   // Get unique draw numbers and chains
@@ -81,11 +95,11 @@ const TransactionHistory: React.FC = () => {
 
   // Mise à jour de la page courante si elle dépasse le total
   useEffect(() => {
-    const maxPage = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
+    const maxPage = Math.max(1, Math.ceil(displayedCount / ITEMS_PER_PAGE));
     if (currentPage > maxPage) {
       setCurrentPage(maxPage);
     }
-  }, [currentPage, totalCount]);
+  }, [currentPage, displayedCount]);
 
   const generateExportFilename = () => {
     const parts = ['participations'];
@@ -112,7 +126,7 @@ const TransactionHistory: React.FC = () => {
     setAbortController(controller);
 
     const exportToastId = toast.loading(
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-4">
         <div>Preparing export...</div>
         <button
           onClick={() => {
@@ -122,9 +136,10 @@ const TransactionHistory: React.FC = () => {
             toast.error('Export cancelled');
             setIsExporting(false);
           }}
-          className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+          className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+          title="Cancel export"
         >
-          Cancel
+          <XMarkIcon className="h-5 w-5" />
         </button>
       </div>,
       { duration: Infinity }
@@ -137,7 +152,7 @@ const TransactionHistory: React.FC = () => {
             throw new Error('Export cancelled');
           }
           toast.loading(
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between gap-4">
               <div>Loading data... {loaded}/{total}</div>
               <button
                 onClick={() => {
@@ -147,9 +162,10 @@ const TransactionHistory: React.FC = () => {
                   toast.error('Export cancelled');
                   setIsExporting(false);
                 }}
-                className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 transition-colors"
+                title="Cancel export"
               >
-                Cancel
+                <XMarkIcon className="h-5 w-5" />
               </button>
             </div>,
             { id: exportToastId }
@@ -169,16 +185,17 @@ const TransactionHistory: React.FC = () => {
         })), generateExportFilename());
 
         toast.success(
-          <div className="flex items-center justify-between gap-2">
-            <div>{`Export completed! ${allData.length} records exported`}</div>
+          <div className="flex items-center justify-between gap-4">
+            <div>Export completed! {allData.length} records exported</div>
             <button
               onClick={() => toast.dismiss(exportToastId)}
-              className="ml-2 text-xs text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              title="Dismiss"
             >
-              Dismiss
+              <XMarkIcon className="h-5 w-5" />
             </button>
           </div>,
-          { id: exportToastId, duration: 5000 }
+          { id: exportToastId }
         );
       }
     } catch (error) {
@@ -202,45 +219,97 @@ const TransactionHistory: React.FC = () => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, transactions.length);
   const paginatedTransactions = transactions.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(displayedCount / ITEMS_PER_PAGE);
 
   // Vérifier si la page actuelle a des données ou est en cours de chargement
   const hasDataOnCurrentPage = paginatedTransactions.length > 0;
   const isLoadingNextPage = isLoading || (isLoadingMore && startIndex >= transactions.length);
-  const canLoadMore = hasNextPage || currentPage * ITEMS_PER_PAGE < totalCount;
+  const canLoadMore = hasNextPage || currentPage * ITEMS_PER_PAGE < displayedCount;
+
+  // Calculer les compteurs
+  const { allCount, myCount } = useMemo(() => ({
+    allCount: displayedCount,
+    myCount: userCount || 0
+  }), [displayedCount, userCount]);
+
+  // Réinitialiser la page quand on change de mode
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [viewMode]);
 
   return (
     <div className="mt-8">
-      <div className="grid grid-cols-12 gap-4 mb-6">
-        <select
-          value={selectedDraw}
-          onChange={(e) => setSelectedDraw(e.target.value)}
-          className="col-span-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="">All draws</option>
-          {drawNumbers.map(draw => (
-            <option key={draw} value={draw}>#{draw}</option>
-          ))}
-        </select>
+      <div className="flex flex-col gap-6">
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => setViewMode('all')}
+            className={`group flex items-center gap-3 px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ${
+              viewMode === 'all'
+                ? 'bg-emerald-500 text-white scale-105 shadow-lg hover:bg-emerald-600'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 hover:scale-105'
+            }`}
+          >
+            <GlobeAltIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+            <span>All participations</span>
+            <span className={`inline-flex items-center justify-center min-w-[2rem] px-1.5 py-0.5 text-xs font-bold rounded-full transition-colors duration-300 ${
+              viewMode === 'all'
+                ? 'bg-white/20 text-white'
+                : 'bg-emerald-200 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300'
+            }`}>
+              {totalCount}
+            </span>
+          </button>
+          <button
+            onClick={() => setViewMode('mine')}
+            className={`group flex items-center gap-3 px-6 py-3 rounded-2xl text-sm font-medium transition-all duration-300 ${
+              viewMode === 'mine'
+                ? 'bg-emerald-500 text-white scale-105 shadow-lg hover:bg-emerald-600'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-emerald-100 dark:hover:bg-emerald-900 hover:scale-105'
+            }`}
+          >
+            <UserIcon className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
+            <span>My participations</span>
+            <span className={`inline-flex items-center justify-center min-w-[2rem] px-1.5 py-0.5 text-xs font-bold rounded-full transition-colors duration-300 ${
+              viewMode === 'mine'
+                ? 'bg-white/20 text-white'
+                : 'bg-emerald-200 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300'
+            }`}>
+              {userCount}
+            </span>
+          </button>
+        </div>
 
-        <select
-          value={selectedChain}
-          onChange={(e) => setSelectedChain(e.target.value)}
-          className="col-span-3 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="">All chains</option>
-          {chains.map(chain => (
-            <option key={chain} value={chain}>{chain}</option>
-          ))}
-        </select>
+        <div className="grid grid-cols-12 gap-4">
+          <select
+            value={selectedDraw}
+            onChange={(e) => setSelectedDraw(e.target.value)}
+            className="col-span-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="">All draws</option>
+            {drawNumbers.map(draw => (
+              <option key={draw} value={draw}>#{draw}</option>
+            ))}
+          </select>
 
-        <input
-          type="text"
-          placeholder="Search by address..."
-          value={accountSearch}
-          onChange={(e) => setAccountSearch(e.target.value)}
-          className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
+          <select
+            value={selectedChain}
+            onChange={(e) => setSelectedChain(e.target.value)}
+            className="col-span-3 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          >
+            <option value="">All chains</option>
+            {chains.map(chain => (
+              <option key={chain} value={chain}>{chain}</option>
+            ))}
+          </select>
+
+          <input
+            type="text"
+            placeholder="Search by address..."
+            value={accountSearch}
+            onChange={(e) => setAccountSearch(e.target.value)}
+            className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
       </div>
 
       {transactions.length > 0 && (
@@ -249,7 +318,7 @@ const TransactionHistory: React.FC = () => {
           totalPages={totalPages}
           onPageChange={handlePageChange}
           onDownload={handleExport}
-          totalResults={totalCount}
+          totalResults={displayedCount}
           displayedResults={transactions.length}
           isExporting={isExporting}
           hasNextPage={canLoadMore}
@@ -298,7 +367,7 @@ const TransactionHistory: React.FC = () => {
           totalPages={totalPages}
           onPageChange={handlePageChange}
           onDownload={handleExport}
-          totalResults={totalCount}
+          totalResults={displayedCount}
           displayedResults={transactions.length}
           isExporting={isExporting}
           hasNextPage={canLoadMore}

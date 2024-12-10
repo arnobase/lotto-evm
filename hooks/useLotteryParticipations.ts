@@ -64,10 +64,11 @@ interface UseParticipationsOptions {
   chain?: string;
   accountId?: string;
   first?: number;
+  skipQuery?: boolean;
 }
 
 export const useLotteryParticipations = (options: UseParticipationsOptions = {}) => {
-  const { drawNumber, chain, accountId, first = 100 } = options;
+  const { drawNumber, chain, accountId, first = 100, skipQuery = false } = options;
   const client = useApolloClient();
 
   const filterEntries = [
@@ -87,7 +88,8 @@ export const useLotteryParticipations = (options: UseParticipationsOptions = {})
       first
     },
     fetchPolicy: 'cache-first',
-    nextFetchPolicy: 'cache-first'
+    nextFetchPolicy: 'cache-first',
+    skip: skipQuery
   });
 
   const loadMore = useCallback(async () => {
