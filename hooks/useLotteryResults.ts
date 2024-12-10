@@ -59,8 +59,7 @@ export const useLotteryResults = () => {
                   ...fetchMoreResult.results.nodes
                 ],
                 pageInfo: fetchMoreResult.results.pageInfo,
-                totalCount: fetchMoreResult.results.totalCount,
-                __typename: prev.results.__typename
+                totalCount: fetchMoreResult.results.totalCount
               }
             };
           }

@@ -308,7 +308,7 @@ const TransactionHistory: React.FC = () => {
               value={accountSearch}
               onChange={(e) => setAccountSearch(e.target.value)}
               className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              disabled={viewMode === 'mine'}
+              disabled={viewMode !== 'all'}
             />
           )}
         </div>
