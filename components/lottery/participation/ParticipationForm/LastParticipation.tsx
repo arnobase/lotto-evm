@@ -109,12 +109,43 @@ const LastParticipation: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 flex-1 justify-end">
               {participation.timestamp && (
-                <span 
-                  className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap cursor-help min-w-[60px] text-right"
-                  title={formatDateTime(participation.timestamp)}
-                >
-                  {getRelativeTime(participation.timestamp)}
-                </span>
+                participation.isLocal && participation.hash ? (
+                  <a
+                    href={getExplorerUrl(participation.chain, participation.hash)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-emerald-500 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors whitespace-nowrap"
+                  >
+                    <span 
+                      className="text-xs cursor-help"
+                      title={formatDateTime(participation.timestamp)}
+                    >
+                      {getRelativeTime(participation.timestamp)} ({new Date(participation.timestamp).toLocaleString('en-US', {
+                        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: false
+                      })})
+                    </span>
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                  </a>
+                ) : (
+                  <span 
+                    className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap cursor-help"
+                    title={formatDateTime(participation.timestamp)}
+                  >
+                    {getRelativeTime(participation.timestamp)} ({new Date(participation.timestamp).toLocaleString('en-US', {
+                      timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                      month: 'short',
+                      day: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                      hour12: false
+                    })})
+                  </span>
+                )
               )}
               <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap min-w-[80px] text-center">
                 {participation.chain}
@@ -123,17 +154,6 @@ const LastParticipation: React.FC = () => {
                 <span className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900 rounded-full text-sm font-medium text-emerald-700 dark:text-emerald-300 whitespace-nowrap min-w-[80px] text-center">
                   Draw #{participation.drawNumber}
                 </span>
-              )}
-              {participation.isLocal && (
-                <a
-                  href={getExplorerUrl(participation.chain, participation.hash)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-emerald-500 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors whitespace-nowrap px-3 py-1"
-                >
-                  tx
-                  <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                </a>
               )}
             </div>
           </div>

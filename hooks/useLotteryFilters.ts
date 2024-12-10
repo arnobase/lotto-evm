@@ -3,16 +3,9 @@ import { useWeb3 } from '../contexts/Web3Context';
 
 const GET_FILTER_VALUES = gql`
   query GetFilterValues {
-    drawNumbers: participations(orderBy: DRAW_NUMBER_DESC) {
+    raffles {
       nodes {
         drawNumber
-        __typename
-      }
-      __typename
-    }
-    chains: participations {
-      nodes {
-        chain
         __typename
       }
       __typename
@@ -20,32 +13,20 @@ const GET_FILTER_VALUES = gql`
   }
 `;
 
-interface FilterNode {
+interface RaffleNode {
+  drawNumber: string;
   __typename: string;
 }
 
-interface DrawNumberNode extends FilterNode {
-  drawNumber: string;
-}
-
-interface ChainNode extends FilterNode {
-  chain: string;
-}
-
 interface QueryResponse {
-  drawNumbers: {
-    nodes: DrawNumberNode[];
-    __typename: string;
-  };
-  chains: {
-    nodes: ChainNode[];
+  raffles: {
+    nodes: RaffleNode[];
     __typename: string;
   };
 }
 
 interface FilterValues {
   drawNumbers: string[];
-  chains: string[];
   isLoading: boolean;
   error: Error | null;
   refetch: () => void;
@@ -60,16 +41,11 @@ export const useLotteryFilters = (): FilterValues => {
   });
 
   const drawNumbers = Array.from(new Set(
-    data?.drawNumbers?.nodes?.map((node: DrawNumberNode) => node.drawNumber) || []
+    data?.raffles?.nodes?.map(node => node.drawNumber) || []
   )).sort((a, b) => parseInt(b) - parseInt(a));
-
-  const chains = Array.from(new Set(
-    data?.chains?.nodes?.map((node: ChainNode) => node.chain) || []
-  )).sort();
 
   return {
     drawNumbers,
-    chains,
     isLoading: loading,
     error: error ? error as Error : null,
     refetch
