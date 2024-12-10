@@ -15,12 +15,13 @@ import {
   ClockIcon,
   PlayCircleIcon
 } from '@heroicons/react/24/outline';
+import Image from 'next/image';
 
 const MenuButton = ({ children, onClick, active = false }: { children: React.ReactNode; onClick: () => void; active?: boolean }) => (
   <button
     onClick={onClick}
     className={`
-      relative px-8 py-4 text-lg font-semibold rounded-xl
+      relative px-6 py-3 text-base font-semibold rounded-xl
       transition-all duration-200 ease-out
       ${active 
         ? 'bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg' 
@@ -80,47 +81,47 @@ const LotteryPage: React.FC = () => {
               )}
             </div>
 
-            <div className="flex justify-center gap-8 py-4">
+            <div className="flex justify-center gap-4 py-2">
               <MenuButton onClick={() => handleTabChange(0)} active={selectedTab === 0}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2" data-tab="0">
                   <div className={`p-2 rounded-lg transition-colors duration-300 ${
                     selectedTab === 0
                       ? 'bg-white/20'
                       : 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50'
                   }`}>
-                    <TicketIcon className={`h-6 w-6 transition-transform duration-300 ${
+                    <TicketIcon className={`h-5 w-5 transition-transform duration-300 ${
                       selectedTab === 0 ? 'animate-[wiggle_1s_ease-in-out_infinite]' : 'group-hover:scale-110'
                     }`} />
                   </div>
-                  <span className="text-lg">Participate</span>
+                  <span>Participate</span>
                 </div>
               </MenuButton>
               <MenuButton onClick={() => handleTabChange(1)} active={selectedTab === 1}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2" data-tab="1">
                   <div className={`p-2 rounded-lg transition-colors duration-300 ${
                     selectedTab === 1
                       ? 'bg-white/20'
                       : 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50'
                   }`}>
-                    <TrophyIcon className={`h-6 w-6 transition-transform duration-300 ${
+                    <TrophyIcon className={`h-5 w-5 transition-transform duration-300 ${
                       selectedTab === 1 ? 'animate-[float_3s_ease-in-out_infinite]' : 'group-hover:scale-110'
                     }`} />
                   </div>
-                  <span className="text-lg">Results</span>
+                  <span>Results</span>
                 </div>
               </MenuButton>
               <MenuButton onClick={() => handleTabChange(2)} active={selectedTab === 2}>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2" data-tab="2">
                   <div className={`p-2 rounded-lg transition-colors duration-300 ${
                     selectedTab === 2
                       ? 'bg-white/20'
                       : 'bg-emerald-100 dark:bg-emerald-900/30 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-900/50'
                   }`}>
-                    <ClockIcon className={`h-6 w-6 transition-transform duration-300 ${
+                    <ClockIcon className={`h-5 w-5 transition-transform duration-300 ${
                       selectedTab === 2 ? 'animate-[tilt_3s_ease-in-out_infinite]' : 'group-hover:scale-110'
                     }`} />
                   </div>
-                  <span className="text-lg">History</span>
+                  <span>History</span>
                 </div>
               </MenuButton>
             </div>

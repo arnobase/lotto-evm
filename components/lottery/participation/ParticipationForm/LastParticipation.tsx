@@ -1,6 +1,6 @@
 import React from 'react';
 import NumberBall from '../../../common/NumberBall';
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { NETWORKS } from '../../../../libs/constants';
 import { useLastParticipations, CombinedParticipation } from '../../../../hooks/useLastParticipations';
 
@@ -44,9 +44,18 @@ const LastParticipation: React.FC = () => {
   if (isLoading) {
     return (
       <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h3 className="text-lg font-semibold mb-4 text-emerald-600 dark:text-emerald-400">
-          Last Participations
-        </h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+            My last participations
+          </h3>
+          <button
+            disabled
+            className="text-emerald-400 dark:text-emerald-600 text-sm font-medium flex items-center gap-1 opacity-50 cursor-not-allowed"
+          >
+            View all
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+        </div>
         <div className="text-center text-gray-500 dark:text-gray-400">
           Loading...
         </div>
@@ -60,9 +69,30 @@ const LastParticipation: React.FC = () => {
 
   return (
     <div className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <h3 className="text-lg font-semibold mb-4 text-emerald-600 dark:text-emerald-400">
-        Last Participations
-      </h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+          My last participations
+        </h3>
+        <button
+          onClick={() => {
+            const historyTab = document.querySelector('[data-tab="2"]');
+            if (historyTab) {
+              (historyTab as HTMLElement).click();
+              // Petit délai pour laisser le temps à l'onglet de charger
+              setTimeout(() => {
+                const myParticipationsButton = document.querySelector('[data-filter="my"]');
+                if (myParticipationsButton) {
+                  (myParticipationsButton as HTMLElement).click();
+                }
+              }, 100);
+            }
+          }}
+          className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm font-medium flex items-center gap-1"
+        >
+          View all
+          <ArrowRightIcon className="h-4 w-4" />
+        </button>
+      </div>
       <div className="space-y-4">
         {participations.map((participation: CombinedParticipation, index: number) => (
           <div key={participation.hash} className="flex items-center gap-4">
