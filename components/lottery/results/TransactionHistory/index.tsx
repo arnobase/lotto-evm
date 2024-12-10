@@ -15,6 +15,7 @@ const TransactionHistory: React.FC = () => {
   const { evmAccount } = useWeb3();
   const [currentPage, setCurrentPage] = useState(1);
   const [isExporting, setIsExporting] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
 
   // Charger le viewMode sauvegardé
@@ -80,12 +81,45 @@ const TransactionHistory: React.FC = () => {
     return Array.from(chainSet).sort();
   }, [participations]);
 
+  // Charger plus de données quand nécessaire
+  const handleLoadMore = useCallback(async () => {
+    if (isLoadingMore || !hasNextPage) return;
+    setIsLoadingMore(true);
+    try {
+      await loadMore();
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [isLoadingMore, hasNextPage, loadMore]);
+
+  // Précharger la page suivante
+  useEffect(() => {
+    const nextPageStart = (currentPage) * ITEMS_PER_PAGE;
+    const buffer = 20; // Précharger si on approche de la fin du lot actuel
+    
+    if (
+      !isLoading && 
+      !isLoadingMore && 
+      hasNextPage && 
+      participations.length < nextPageStart + buffer &&
+      participations.length % 100 === 0
+    ) {
+      handleLoadMore();
+    }
+  }, [currentPage, hasNextPage, participations.length, isLoading, isLoadingMore, handleLoadMore]);
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, participations.length);
   const paginatedParticipations = participations.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(totalParticipations / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(participations.length / ITEMS_PER_PAGE);
+
+  // Vérifier si la page actuelle a des données ou est en cours de chargement
+  const hasDataOnCurrentPage = paginatedParticipations.length > 0;
+  const isLoadingNextPage = isLoading || (isLoadingMore && startIndex >= participations.length - ITEMS_PER_PAGE);
+  const canLoadMore = hasNextPage && participations.length % 100 === 0;
 
   const handlePageChange = (newPage: number) => {
+    if (newPage === currentPage) return;
     setCurrentPage(newPage);
   };
 
@@ -267,22 +301,38 @@ const TransactionHistory: React.FC = () => {
             ))}
           </select>
 
-          <input
-            type="text"
-            placeholder="Search by address..."
-            value={accountSearch}
-            onChange={(e) => setAccountSearch(e.target.value)}
-            className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            disabled={viewMode === 'mine'}
-          />
+          {viewMode === 'all' && (
+            <input
+              type="text"
+              placeholder="Search by address"
+              value={accountSearch}
+              onChange={(e) => setAccountSearch(e.target.value)}
+              className="col-span-7 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              disabled={viewMode === 'mine'}
+            />
+          )}
         </div>
 
+        {participations.length > 0 && (
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            onDownload={handleExport}
+            totalResults={totalParticipations}
+            displayedResults={loadedParticipations}
+            isExporting={isExporting}
+            hasNextPage={canLoadMore}
+            isLoadingMore={isLoadingMore}
+          />
+        )}
+
         <div className="space-y-2 my-4">
-          {isLoading ? (
+          {isLoadingNextPage ? (
             <div className="text-center py-4 text-gray-600 dark:text-gray-400">
-              Loading...
+              Loading page {currentPage}...
             </div>
-          ) : paginatedParticipations.length > 0 ? (
+          ) : hasDataOnCurrentPage ? (
             paginatedParticipations.map((participation) => (
               <div key={participation.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -328,23 +378,10 @@ const TransactionHistory: React.FC = () => {
             ))
           ) : (
             <div className="text-center py-4 text-gray-600 dark:text-gray-400">
-              No participations found
+              No participations found on this page
             </div>
           )}
         </div>
-
-        {participations.length > 0 && (
-          <PaginationControls
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-            onDownload={handleExport}
-            totalResults={totalParticipations}
-            displayedResults={loadedParticipations}
-            isExporting={isExporting}
-            hasNextPage={hasNextPage}
-          />
-        )}
       </div>
     </div>
   );
