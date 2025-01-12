@@ -101,9 +101,9 @@ interface ContractAddresses {
 }
 
 export const CONTRACT_ADDRESSES: ContractAddresses = {
-  'Minato': '0xA8AE9c3F7bc784Ccd1E6013c59A233600C6dE90A',
-  'Moonbase': '0x991926D5ca21EF2938B5BAffbf4EC24fB55e205e',
-  'Shibuya': 'ZkMmwcAsCuFPB13kfXH6aQiJYAfnQYC2qMiK5h1mGKsMX86',
+  'Minato': '0x04d884675E5790721cb5F24D41D460E921C08f17',
+  'Moonbase': '0x987461a5eF325f9f217D2b777CeDCf3b9c4D62d5',
+  'Shibuya': 'bSm4f7WjbxFMbo4fRUGw7oHvva65P8m8jCqedFsXAwUJx7V',
 };
 
 export const QUERY_URL: { [key: string]: string } = {
