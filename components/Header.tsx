@@ -14,15 +14,18 @@ export default function Header() {
   const { evmNetwork, switchEvmNetwork } = useWeb3();
   const { theme, toggleTheme } = useTheme();
 
-  const handleNetworkChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleNetworkChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedNetwork = NETWORKS.find(network => network.name === e.target.value);
     
     if (selectedNetwork?.menuLink) {
-      window.location.href = selectedNetwork.menuLink;
+      window.open(selectedNetwork.menuLink, '_blank')
     } else {
-      switchEvmNetwork(e.target.value);
+      await switchEvmNetwork(e.target.value);
     }
   };
+
+  // select by default the first network
+  switchEvmNetwork(NETWORKS[0].name);
 
   return (
     <Disclosure as="nav" className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">

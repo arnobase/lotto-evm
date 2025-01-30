@@ -8,7 +8,7 @@ import { useWeb3 } from '../../../../contexts/Web3Context';
 import { useLastParticipations } from '../../../../hooks/useLastParticipations';
 import { useCurrentDraw } from '../../../../hooks/useCurrentDraw';
 
-const MAX_SELECTIONS = 4;
+const MAX_SELECTIONS = 5;
 
 const toastStyle = {
   style: {
