@@ -1,36 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lotto EVM
+
+A modern and user-friendly lottery dApp UI built with Next.js, TypeScript, and Tailwind CSS.
+
+This UI interacts with:
+
+- Smart Contracts: [lotto-evm](https://github.com/GuiGou12358/lotto-evm)
+- Indexers: [lotto-multichain-subquery](https://github.com/GuiGou12358/lotto-multichain-subquery)
+
+## Features
+
+- 🎲 Participate in lottery draws by selecting 4 numbers
+- 🌐 Multi-chain support (Minato, Moonbase, Shibuya)
+- 🔄 Real-time transaction status with persistent notifications
+- 📱 Fully responsive design
+- 🎯 Last participation display
+- 📊 Complete participation history with filtering options
+- 🔍 Advanced search and filtering capabilities
+- 📥 Export participation data to CSV
+
+## Technical Stack
+
+- **Frontend Framework**: Next.js 14 with TypeScript
+- **Styling**: Tailwind CSS
+- **Web3 Integration**: ethers.js v6
+- **State Management**: React Context
+- **Data Fetching**: Apollo Client for SubQuery
+- **UI Components**: Custom components with Headless UI
+- **Notifications**: react-hot-toast
+- **Testing**: Jest with React Testing Library
+
+## Dependencies
+
+### Smart Contracts
+
+The UI interacts with smart contracts deployed from [lotto-evm](https://github.com/GuiGou12358/lotto-evm). These contracts handle:
+
+- Lottery participation logic
+- Number selection validation
+- Draw management
+- Multi-chain support
+
+### Indexers
+
+Data querying is powered by [lotto-multichain-subquery](https://github.com/GuiGou12358/lotto-multichain-subquery) which provides:
+
+- Participation history
+- Draw results
+- Cross-chain data aggregation
+- Real-time event indexing
 
 ## Getting Started
 
-First, run the development server:
+1. Clone the repository:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/arnobase/lotto-evm
+cd lotto-evm
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Start the development server:
 
-## Learn More
+```bash
+yarn dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Environment Variables
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Create a `.env.local` file with the following variables:
 
-## Deploy on Vercel
+```env
+NEXT_PUBLIC_SUBQUERY_URL=your_subquery_url
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+├── app/                  # Next.js app directory
+├── components/        
+│   ├── common/          # Reusable components
+│   ├── lottery/         # Lottery-specific components
+│   └── web3/            # Web3 integration components
+├── contexts/            # React contexts
+├── hooks/               # Custom React hooks
+├── libs/                # Utility functions and constants
+└── public/              # Static assets
+```
+
+## Features in Detail
+
+### Lottery Participation
+
+- Select 4 numbers from 1 to 50
+- Real-time validation
+- Transaction status notifications
+- Last participation display
+- Automatic number sorting
+
+### Transaction Management
+
+- Persistent transaction status notifications
+- Block explorer links
+- Error handling with user-friendly messages
+- Transaction cancellation handling
+
+### History and Filtering
+
+- View all participations
+- Filter by draw number
+- Filter by network
+- Search by address
+- Export data to CSV
+- Pagination support
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

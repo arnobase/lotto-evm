@@ -42,6 +42,42 @@ interface Network {
 // Define your networks
 export const NETWORKS: Network[] = [
   {
+    name: 'Soneium',
+    type: 'EVM',
+    addToMenu : true,
+    info: {
+      chainId: '0x74C',
+      chainName: 'Soneium',
+      indexerContractId: 21,
+      nativeCurrency: {
+        name: 'ETH',
+        symbol: 'ETH',
+        decimals: 18,
+      },
+      rpcUrls: ['https://rpc.soneium.org/'],
+      blockExplorerUrls: ["https://soneium.blockscout.com/"]
+    },
+  },
+  {
+    name: 'Astar',
+    type: 'EVM',
+    addToMenu : true,
+    menuLink : "https://lucky.substrate.fi/lotto/astar",
+    info: {
+      chainId: '0x51',  // 81 en décimal
+      chainName: 'Astar Network',
+      indexerContractId: 20,
+      nativeCurrency: {
+        name: 'Astar',
+        symbol: 'ASTR',
+        decimals: 18,
+      },
+      rpcUrls: ['https://evm.astar.network'],
+      blockExplorerUrls: ["https://astar.subscan.io/"]
+    },
+  },
+  /*
+  {
     name: 'Minato',
     type: 'EVM',
     addToMenu : true,
@@ -93,6 +129,7 @@ export const NETWORKS: Network[] = [
       blockExplorerUrls: ["https://shibuya.subscan.io/"]
     },
   },
+   */
 ];
 
 // Interface pour les adresses de contrat
@@ -101,7 +138,11 @@ interface ContractAddresses {
 }
 
 export const CONTRACT_ADDRESSES: ContractAddresses = {
-  'Minato': '0xA8AE9c3F7bc784Ccd1E6013c59A233600C6dE90A',
-  'Moonbase': '0x991926D5ca21EF2938B5BAffbf4EC24fB55e205e',
-  'Shibuya': 'ZkMmwcAsCuFPB13kfXH6aQiJYAfnQYC2qMiK5h1mGKsMX86',
+  'Soneium': '0xB2196C9B95BD3cdC799eb89f856895aEDbd649bB',
+  'Astar': 'ZsaaL58Adg7k1xT1EumK575H6GymJ214kvRk8NxKouTWqnC',
+  /*
+  'Minato': '0x04d884675E5790721cb5F24D41D460E921C08f17',
+  'Moonbase': '0x987461a5eF325f9f217D2b777CeDCf3b9c4D62d5',
+  'Shibuya': 'bSm4f7WjbxFMbo4fRUGw7oHvva65P8m8jCqedFsXAwUJx7V',
+   */
 };

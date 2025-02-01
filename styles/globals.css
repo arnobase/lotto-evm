@@ -2,18 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #101010;
-  --foreground: #FFFFFF;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes slot-machine {
+  0% {
+    transform: translateY(-50%);
+    filter: blur(8px);
+  }
+  100% {
+    transform: translateY(50%);
+    filter: blur(8px);
   }
 }
 
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+:root {
+  --toast-background: #ffffff;
+  --toast-text: #374151;
+  --toast-border: #e5e7eb;
+  --toast-icon: #10b981;
+  --toast-icon-background: #ffffff;
+  --toast-link: #374151;
+  --toast-link-hover: #10b981;
+}
+
+.dark {
+  --toast-background: #1f2937;
+  --toast-text: #e5e7eb;
+  --toast-border: #374151;
+  --toast-icon: #10b981;
+  --toast-icon-background: #1f2937;
+  --toast-link: #e5e7eb;
+  --toast-link-hover: #10b981;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+/* Ajout des transitions */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Exceptions pour les transitions */
+.transition-none {
+  transition: none;
+}
+
+/* Styles de base */
 body {
   color: var(--foreground);
   background: var(--background);
@@ -27,8 +119,42 @@ body {
 }
 
 .custom-toast a {
-  color: #FFFFFF;
+  color: var(--toast-link);
   text-decoration: underline;
   cursor: pointer;
   font-size: 0.9em;
+  transition: color 0.2s ease;
+}
+
+.custom-toast a:hover {
+  color: var(--toast-link-hover);
+}
+
+@keyframes width {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.animate-width {
+  animation: width 0.3s ease-out forwards;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes tilt {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(15deg); }
+  75% { transform: rotate(-15deg); }
 }
