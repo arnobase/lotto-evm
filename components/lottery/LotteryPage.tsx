@@ -81,6 +81,16 @@ const LotteryPage: React.FC = () => {
               )}
             </div>
 
+            <div className="content-block">
+              <div className="flex items-center justify-center">
+                <div className="text-md margin-auto text-center">
+                  <div className="text-2xl" >Jackpot: 10,000 $ASTR</div>
+                  <div>Pick 5 numbers and submit your participation (free to play)</div>
+                  <div>A draw is made every week</div>
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-center gap-4 py-2">
               <MenuButton onClick={() => handleTabChange(0)} active={selectedTab === 0}>
                 <div className="flex items-center gap-2" data-tab="0">
