@@ -142,15 +142,6 @@ const LotteryPage: React.FC = () => {
               )}
               {selectedTab === 1 && (
                 <>
-                  <div className="flex justify-end mb-4">
-                    <button
-                      onClick={showLiveDraw}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-500 rounded-lg hover:bg-emerald-600 transition-colors"
-                    >
-                      <PlayCircleIcon className="h-5 w-5" />
-                      Show Live Draw
-                    </button>
-                  </div>
                   <ResultsDisplay
                     results={drawResults}
                     isLoading={false}
