@@ -96,8 +96,8 @@ export const useLastParticipations = () => {
 
     // Trier et dédupliquer pour obtenir les 5 plus récentes
     const uniqueParticipations = allParticipations
-      .filter((participation, index, self) => 
-        index === self.findIndex(p => p.hash === participation.hash)
+      .filter((participation, index, self) =>
+        !participation.isLocal || self.find(p => !p.isLocal && p.drawNumber === participation.drawNumber && p.numbers === participation.numbers)
       )
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
       .slice(0, MAX_HISTORY);

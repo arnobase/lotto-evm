@@ -41,7 +41,7 @@ export const Web3Provider = ({ children }: { children: ReactNode }) => {
   const [evmSigner, setEvmSigner] = useState<ethers.JsonRpcSigner | null | undefined>(undefined);
   const [evmCustomProvider, setEvmCustomProvider] = useState<ethers.JsonRpcProvider | null>(null);
   const [evmAccount, setEvmAccount] = useState<ethers.JsonRpcSigner | null | undefined>(undefined);
-  const [evmNetwork, setEvmNetwork] = useState<string>("Minato");
+  const [evmNetwork, setEvmNetwork] = useState<string>("Soneium");
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [error, setError] = useState<Error | null>(null);
   const isNetworkSwitchingRef = useRef(false);
