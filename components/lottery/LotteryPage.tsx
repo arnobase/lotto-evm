@@ -13,7 +13,11 @@ import {
   TicketIcon, 
   TrophyIcon, 
   ClockIcon,
-  PlayCircleIcon
+  PlayCircleIcon,
+  CurrencyDollarIcon,
+  GiftIcon,
+  CalendarDaysIcon,
+  CursorArrowRaysIcon
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
@@ -82,11 +86,31 @@ const LotteryPage: React.FC = () => {
             </div>
 
             <div className="content-block">
-              <div className="flex items-center justify-center">
-                <div className="text-md margin-auto text-center">
-                  <div className="text-2xl" >Jackpot: 10,000 $ASTR</div>
-                  <div>Pick 5 numbers and submit your participation (free to play)</div>
-                  <div>A draw is made every week</div>
+              <div className="flex flex-col items-center justify-center py-6 px-4">
+                <div className="w-full max-w-md bg-white/50 dark:bg-gray-800/50 rounded-2xl p-6 backdrop-blur-sm border border-emerald-100 dark:border-emerald-900">
+                  <div className="relative mb-6">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-emerald-400/20 to-emerald-300/20 blur-xl"></div>
+                    <div className="relative text-4xl font-bold text-center bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">
+                      Jackpot: 10,000 $ASTR
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4 text-center">
+                    <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400 text-lg">
+                      <CursorArrowRaysIcon className="h-6 w-6 text-emerald-500/70 flex-shrink-0" />
+                      <span>Pick 5 numbers to participate</span>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400 text-lg">
+                      <GiftIcon className="h-6 w-6 text-emerald-500/70 flex-shrink-0" />
+                      <span>Free to play</span>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-3 text-gray-600 dark:text-gray-400 text-lg">
+                      <CalendarDaysIcon className="h-6 w-6 text-emerald-500/70 flex-shrink-0" />
+                      <span>Weekly draws</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
